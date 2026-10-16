@@ -10,7 +10,7 @@ Deadline: **25 Oktober 2026**. Terakhir diperbarui: 2026-10-06.
 | 3 | Project setup: Android Studio, Firebase (Spark), Git | [x] DONE |
 | 4 | Authentication: register, login, logout, session | [x] DONE |
 | 5 | Couple: create/join, invite code, Security Rules | [x] DONE |
-| 6 | Moment: kamera/galeri, kompres, caption, replace | [ ] TODO |
+| 6 | Moment: kamera/galeri, kompres, caption, replace | [x] DONE |
 | 7 | Partner moment realtime (+ P1: mood, reaction) | [ ] TODO |
 | 8 | Important Dates CRUD + countdown | [ ] TODO |
 | 9 | (P1) Reminder / notifikasi | [ ] TODO |
