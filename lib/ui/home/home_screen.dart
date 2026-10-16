@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../data/model/important_date_model.dart';
 import '../../data/model/moment_model.dart';
 import '../../data/repository/couple_repository.dart';
+import '../../data/repository/date_repository.dart';
 import '../../data/repository/moment_repository.dart';
 import '../auth/auth_provider.dart';
 import '../auth/login_screen.dart';
+import '../dates/date_list_screen.dart';
 import '../moment/moment_edit_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -59,6 +62,15 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('PUFLUV'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.event_outlined),
+            tooltip: 'Tanggal Penting',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const DateListScreen()),
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Logout',
             onPressed: () async {
@@ -99,6 +111,59 @@ class _HomeScreenState extends State<HomeScreen> {
                     return ListView(
                       padding: const EdgeInsets.all(16.0),
                       children: [
+                        // Countdown Banner Terdekat
+                        StreamBuilder<List<ImportantDateModel>>(
+                          stream: DateRepository().observeDates(coupleId: coupleId),
+                          builder: (context, dateSnapshot) {
+                            final dates = dateSnapshot.data ?? [];
+                            if (dates.isEmpty) return const SizedBox.shrink();
+
+                            // Cari tanggal terdekat
+                            dates.sort((a, b) => a.daysUntil(DateTime.now()).compareTo(b.daysUntil(DateTime.now())));
+                            final nearest = dates.first;
+                            final days = nearest.daysUntil(DateTime.now());
+
+                            return Card(
+                              color: Colors.pink.shade50,
+                              elevation: 2,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.favorite, color: Colors.pinkAccent, size: 36),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            nearest.title,
+                                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            days == 0 ? 'Hari ini!' : '$days hari lagi',
+                                            style: const TextStyle(color: Colors.pink, fontWeight: FontWeight.w600),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.arrow_forward_ios, size: 16),
+                                      onPressed: () {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(builder: (_) => const DateListScreen()),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 16),
                         const Text(
                           'Momen Pasangan',
                           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),

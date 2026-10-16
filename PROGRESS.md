@@ -11,8 +11,8 @@ Deadline: **25 Oktober 2026**. Terakhir diperbarui: 2026-10-06.
 | 4 | Authentication: register, login, logout, session | [x] DONE |
 | 5 | Couple: create/join, invite code, Security Rules | [x] DONE |
 | 6 | Moment: kamera/galeri, kompres, caption, replace | [x] DONE |
-| 7 | Partner moment realtime (+ P1: mood, reaction) | [ ] TODO |
-| 8 | Important Dates CRUD + countdown | [ ] TODO |
+| 7 | Partner moment realtime (+ P1: mood, reaction) | [x] DONE |
+| 8 | Important Dates CRUD + countdown | [x] DONE |
 | 9 | (P1) Reminder / notifikasi | [ ] TODO |
 | 10 | UI polish minimal (empty/loading/error) | [ ] TODO |
 | 11 | Testing dua perangkat | [ ] TODO |
