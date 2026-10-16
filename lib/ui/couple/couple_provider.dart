@@ -79,13 +79,16 @@ class CoupleProvider with ChangeNotifier {
 
   String _parseError(dynamic error) {
     final msg = error.toString();
+    debugPrint('[CoupleProvider] Error details: $msg');
     if (msg.contains('tidak valid') || msg.contains('tidak ditemukan')) {
       return 'Kode undangan tidak valid';
     } else if (msg.contains('sudah penuh')) {
       return 'Couple space ini sudah penuh';
     } else if (msg.contains('sendiri')) {
       return 'Anda tidak dapat bergabung dengan couple Anda sendiri';
+    } else if (msg.contains('permission-denied') || msg.contains('PERMISSION_DENIED')) {
+      return 'Izin ditolak oleh server (Firestore Rules)';
     }
-    return 'Terjadi kesalahan. Gagal memproses couple.';
+    return 'Gagal: $msg';
   }
 }

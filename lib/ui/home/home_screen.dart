@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../data/model/important_date_model.dart';
 import '../../data/model/moment_model.dart';
 import '../../data/repository/couple_repository.dart';
@@ -62,6 +64,82 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('PUFLUV'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.share_outlined),
+            tooltip: 'Bagikan Kode Undangan',
+            onPressed: () async {
+              if (coupleId == null) return;
+              final couple = await CoupleRepository().getCouple(coupleId);
+              if (!context.mounted || couple == null) return;
+
+              showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  title: const Text('Kode Undangan Pasangan'),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('Bagikan kode ini ke pasanganmu:'),
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.pink.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.pinkAccent.shade100, width: 2),
+                        ),
+                        child: SelectableText(
+                          couple.inviteCode,
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 4,
+                            color: Colors.pink,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          OutlinedButton.icon(
+                            icon: const Icon(Icons.copy, size: 18),
+                            label: const Text('Salin'),
+                            onPressed: () {
+                              Clipboard.setData(ClipboardData(text: couple.inviteCode));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Kode disalin!')),
+                              );
+                            },
+                          ),
+                          const SizedBox(width: 12),
+                          FilledButton.icon(
+                            icon: const Icon(Icons.share, size: 18),
+                            label: const Text('Bagikan'),
+                            onPressed: () {
+                              SharePlus.instance.share(
+                                ShareParams(
+                                  text: 'Yuk gabung di ruang privat kita di PUFLUV! Masukkan kode undangan: ${couple.inviteCode}',
+                                  subject: 'Undangan PUFLUV Space',
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      child: const Text('Tutup'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.event_outlined),
             tooltip: 'Tanggal Penting',

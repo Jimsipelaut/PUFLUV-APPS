@@ -60,7 +60,7 @@ class CoupleRepository {
   Future<CoupleModel> joinCouple(String userId, String inviteCode) async {
     final cleanCode = inviteCode.trim().toUpperCase();
 
-    // 1. Cari invite code
+    // 1. Cari invite code di koleksi invites
     final inviteDoc = await _firestore.collection('invites').doc(cleanCode).get();
     if (!inviteDoc.exists || inviteDoc.data() == null) {
       throw Exception('Kode undangan tidak valid atau tidak ditemukan');
@@ -68,40 +68,29 @@ class CoupleRepository {
 
     final coupleId = inviteDoc.data()!['coupleId'] as String;
     final coupleRef = _firestore.collection('couples').doc(coupleId);
+    final userRef = _firestore.collection('users').doc(userId);
 
-    CoupleModel? coupleResult;
-
-    await _firestore.runTransaction((transaction) async {
-      final coupleSnapshot = await transaction.get(coupleRef);
-      if (!coupleSnapshot.exists || coupleSnapshot.data() == null) {
-        throw Exception('Data couple tidak ditemukan');
-      }
-
-      final couple = CoupleModel.fromMap(coupleId, coupleSnapshot.data()!);
-
-      if (couple.memberB.isNotEmpty) {
-        throw Exception('Couple space ini sudah penuh (berisi 2 orang)');
-      }
-
-      if (couple.memberA == userId) {
-        throw Exception('Anda tidak dapat bergabung dengan couple Anda sendiri');
-      }
-
-      // Update couple dengan memberB
-      transaction.update(coupleRef, {'memberB': userId});
-
-      // Update user coupleId
-      final userRef = _firestore.collection('users').doc(userId);
-      transaction.update(userRef, {'coupleId': coupleId});
-
-      coupleResult = couple.copyWith(memberB: userId);
-    });
-
-    if (coupleResult == null) {
-      throw Exception('Gagal bergabung dengan couple');
+    // 2. Baca data couple
+    final coupleSnapshot = await coupleRef.get();
+    if (!coupleSnapshot.exists || coupleSnapshot.data() == null) {
+      throw Exception('Data couple tidak ditemukan');
     }
 
-    return coupleResult!;
+    final couple = CoupleModel.fromMap(coupleId, coupleSnapshot.data()!);
+
+    if (couple.memberB.isNotEmpty) {
+      throw Exception('Couple space ini sudah penuh (berisi 2 orang)');
+    }
+
+    if (couple.memberA == userId) {
+      throw Exception('Anda tidak dapat bergabung dengan couple Anda sendiri');
+    }
+
+    // 3. Update data secara langsung (bukan transaction agar toleran jaringan)
+    await coupleRef.update({'memberB': userId});
+    await userRef.update({'coupleId': coupleId});
+
+    return couple.copyWith(memberB: userId);
   }
 
   Future<CoupleModel?> getCouple(String coupleId) async {

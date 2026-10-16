@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../auth/auth_provider.dart';
 import '../auth/login_screen.dart';
 import '../home/home_screen.dart';
@@ -34,18 +36,97 @@ class _CoupleSetupView extends StatelessWidget {
     if (success) {
       await authProvider.checkAuthSession();
       if (!context.mounted) return;
+
+      final inviteCode = coupleProvider.couple?.inviteCode ?? '';
+
+      // Tampilkan Dialog Khusus untuk Bagikan & Salin Kode
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
+            children: [
+              Icon(Icons.favorite, color: Colors.pinkAccent),
+              SizedBox(width: 8),
+              Text('Ruang Berhasil Dibuat!'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Bagikan kode 6 digit ini ke pasanganmu agar bisa bergabung:',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.pink.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.pinkAccent.shade100, width: 2),
+                ),
+                child: SelectableText(
+                  inviteCode,
+                  style: const TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 4,
+                    color: Colors.pink,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.copy, size: 18),
+                    label: const Text('Salin'),
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: inviteCode));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Kode berhasil disalin!'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 12),
+                  FilledButton.icon(
+                    icon: const Icon(Icons.share, size: 18),
+                    label: const Text('Bagikan'),
+                    onPressed: () {
+                      SharePlus.instance.share(
+                        ShareParams(
+                          text: 'Yuk gabung di ruang privat kita di PUFLUV! Masukkan kode undangan: $inviteCode',
+                          subject: 'Undangan PUFLUV Space',
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+              child: const Text('Lanjut ke Beranda'),
+            ),
+          ],
+        ),
+      );
+
+      if (!context.mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const HomeScreen()),
         (route) => false,
       );
-      if (coupleProvider.couple != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Kode undangan: ${coupleProvider.couple!.inviteCode}'),
-            duration: const Duration(seconds: 4),
-          ),
-        );
-      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
