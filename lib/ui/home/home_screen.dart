@@ -6,6 +6,7 @@ import '../../data/model/moment_model.dart';
 import '../../data/repository/couple_repository.dart';
 import '../../data/repository/date_repository.dart';
 import '../../data/repository/moment_repository.dart';
+import '../../data/utils/widget_sync_manager.dart';
 import '../auth/auth_provider.dart';
 import '../auth/login_screen.dart';
 import '../dates/date_list_screen.dart';
@@ -108,6 +109,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       }
                     }
 
+                    // Sync otomatis ke Home Screen Widget native saat data moment berubah
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      WidgetSyncManager.syncWidget(partnerMoment: partnerMoment);
+                    });
+
                     return ListView(
                       padding: const EdgeInsets.all(16.0),
                       children: [
@@ -122,6 +128,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             dates.sort((a, b) => a.daysUntil(DateTime.now()).compareTo(b.daysUntil(DateTime.now())));
                             final nearest = dates.first;
                             final days = nearest.daysUntil(DateTime.now());
+
+                            // Sync juga tanggal terdekat ke Widget native
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              WidgetSyncManager.syncWidget(
+                                partnerMoment: partnerMoment,
+                                dates: dates,
+                              );
+                            });
 
                             return Card(
                               color: Colors.pink.shade50,
