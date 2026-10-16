@@ -8,9 +8,13 @@ import 'ui/splash/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e, stack) {
+    debugPrint('Firebase initialization failed: $e\n$stack');
+  }
   runApp(const PufLuvApp());
 }
 
@@ -35,6 +39,7 @@ class PufLuvApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,
+          scaffoldBackgroundColor: Colors.white,
           colorScheme: ColorScheme.fromSeed(
             seedColor: Colors.pinkAccent,
             brightness: Brightness.light,

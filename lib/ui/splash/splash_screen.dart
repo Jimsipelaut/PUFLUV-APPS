@@ -23,7 +23,18 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkSession() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    await authProvider.checkAuthSession();
+
+    try {
+      // Pasang timeout 5 detik agar splash tidak hang/blackscreen jika Firebase/jaringan lambat
+      await authProvider.checkAuthSession().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          debugPrint('Auth session check timed out after 5s');
+        },
+      );
+    } catch (e) {
+      debugPrint('Error during session check: $e');
+    }
 
     if (!mounted) return;
 
