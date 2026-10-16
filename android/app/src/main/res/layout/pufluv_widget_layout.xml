@@ -34,14 +34,12 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="6dp" />
-
-    <!-- Moment Partner Image Container -->
+    <!-- Moment Partner Image Container (menggunakan layout_margin, tanpa Space) -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp"
         android:layout_weight="1">
 
         <ImageView
@@ -62,10 +60,6 @@
             android:textSize="12sp"
             android:visibility="gone" />
     </FrameLayout>
-
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="6dp" />
 
     <!-- Caption & Mood Bar -->
     <TextView
