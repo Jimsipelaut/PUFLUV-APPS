@@ -105,7 +105,12 @@ class DateListScreen extends StatelessWidget {
               } catch (_) {
                 parsedDate = DateTime.now();
               }
-              final formatted = DateFormat('dd MMM yyyy', 'id_ID').format(parsedDate);
+              String formatted;
+              try {
+                formatted = DateFormat('dd MMM yyyy', 'id_ID').format(parsedDate);
+              } catch (_) {
+                formatted = DateFormat('dd MMM yyyy').format(parsedDate);
+              }
 
               return Card(
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

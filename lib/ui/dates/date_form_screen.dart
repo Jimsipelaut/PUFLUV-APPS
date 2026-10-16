@@ -104,6 +104,14 @@ class _DateFormScreenState extends State<DateFormScreen> {
     }
   }
 
+  String _formatDate(DateTime date) {
+    try {
+      return DateFormat('dd MMMM yyyy', 'id_ID').format(date);
+    } catch (_) {
+      return DateFormat('dd MMMM yyyy').format(date);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -144,7 +152,7 @@ class _DateFormScreenState extends State<DateFormScreen> {
                       child: Text(
                         _selectedDate == null
                             ? 'Pilih tanggal'
-                            : DateFormat('dd MMMM yyyy', 'id_ID').format(_selectedDate!),
+                            : _formatDate(_selectedDate!),
                         style: TextStyle(
                           color: _selectedDate == null ? Colors.grey : Colors.black87,
                         ),

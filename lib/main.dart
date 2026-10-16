@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'data/repository/auth_repository.dart';
 import 'data/repository/couple_repository.dart';
@@ -21,6 +22,14 @@ void main() async {
   } catch (e, stack) {
     debugPrint('Firebase initialization failed: $e\n$stack');
   }
+
+  // Inisialisasi locale formatting tanggal (id_ID) untuk intl
+  try {
+    await initializeDateFormatting('id_ID', null);
+  } catch (e) {
+    debugPrint('DateFormatting initialization failed: $e');
+  }
+
   runApp(const PufLuvApp());
 }
 
