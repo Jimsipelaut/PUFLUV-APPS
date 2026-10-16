@@ -13,10 +13,7 @@ class CoupleSetupScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => CoupleProvider(),
-      child: const _CoupleSetupView(),
-    );
+    return const _CoupleSetupView();
   }
 }
 

@@ -2,8 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'data/repository/auth_repository.dart';
+import 'data/repository/couple_repository.dart';
+import 'data/repository/date_repository.dart';
+import 'data/repository/moment_repository.dart';
 import 'firebase_options.dart';
 import 'ui/auth/auth_provider.dart';
+import 'ui/couple/couple_provider.dart';
+import 'ui/dates/date_provider.dart';
+import 'ui/moment/moment_provider.dart';
 import 'ui/splash/splash_screen.dart';
 
 void main() async {
@@ -25,12 +31,31 @@ class PufLuvApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider<AuthRepository>(
-          create: (_) => AuthRepository(),
-        ),
+        // Repositories
+        Provider<AuthRepository>(create: (_) => AuthRepository()),
+        Provider<CoupleRepository>(create: (_) => CoupleRepository()),
+        Provider<MomentRepository>(create: (_) => MomentRepository()),
+        Provider<DateRepository>(create: (_) => DateRepository()),
+
+        // Providers (ChangeNotifiers)
         ChangeNotifierProvider<AuthProvider>(
           create: (context) => AuthProvider(
             repository: context.read<AuthRepository>(),
+          ),
+        ),
+        ChangeNotifierProvider<CoupleProvider>(
+          create: (context) => CoupleProvider(
+            repository: context.read<CoupleRepository>(),
+          ),
+        ),
+        ChangeNotifierProvider<MomentProvider>(
+          create: (context) => MomentProvider(
+            repository: context.read<MomentRepository>(),
+          ),
+        ),
+        ChangeNotifierProvider<DateProvider>(
+          create: (context) => DateProvider(
+            repository: context.read<DateRepository>(),
           ),
         ),
       ],
