@@ -6,8 +6,8 @@ Deadline: **25 Oktober 2026**. Terakhir diperbarui: 2026-10-06.
 | Fase | Isi | Status |
 |---|---|---|
 | 1 | Analisis: requirement, scope, BR, use case | [x] DONE |
-| 2 | Desain: activity, sequence, class/ERD, arsitektur, UI flow | [~] menunggu persetujuan akhir D-09, D-10, jadwal |
-| 3 | Project setup: Android Studio, Firebase (Spark), Git | [ ] TODO |
+| 2 | Desain: activity, sequence, class/ERD, arsitektur, UI flow | [x] DONE |
+| 3 | Project setup: Android Studio, Firebase (Spark), Git | [~] IN PROGRESS |
 | 4 | Authentication: register, login, logout, session | [ ] TODO |
 | 5 | Couple: create/join, invite code, Security Rules | [ ] TODO |
 | 6 | Moment: kamera/galeri, kompres, caption, replace | [ ] TODO |
@@ -36,3 +36,5 @@ Lihat `docs/02-mvp-and-priorities.md` bagian 5 (5 skenario dua perangkat).
 
 ## Log
 - 2026-10-06: Fase 1 selesai. Fase 2 dokumen ditulis. Keputusan Rp0: tanpa Firebase Storage (D-02).
+- 2026-10-06: Fase 2 DONE; 3.1 selesai (repo ter-push).
+- 2026-10-16: Keputusan D-14 approved (migrasi implementasi ke Flutter). Setup Flutter diinisialisasi: package name `com.pufluv.app`, konfigurasi Firebase plugin & google-services.json, dependensi `firebase_core`, `firebase_auth`, `cloud_firestore`, `provider`, `intl`. Proyek dan status di-push ke GitHub untuk diteruskan via Claude. Fase 3 [~] in progress menuju Fase 4.

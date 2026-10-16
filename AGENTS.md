@@ -23,7 +23,7 @@ Jika ada konflik antar dokumen: **tunjukkan konfliknya, jangan pilih diam-diam.*
 - **Dilarang** menambah: chat, feed, history/archive foto, comment, follower, public profile, video, iklan (P3).
 - **Dilarang** menambah dependensi/library baru tanpa mencatatnya di `docs/DECISIONS.md`.
 - **Dilarang** over-engineering: tanpa Hilt, tanpa multi-module, tanpa abstraksi "best practice" yang tidak dibutuhkan dua pengguna.
-- Jangan menaruh logika bisnis di Activity/Composable. Alur: UI → ViewModel → Repository → Firebase.
+- Jangan menaruh logika bisnis di Activity/Composable/Widget. Alur: UI → ViewModel/Notifier (ChangeNotifier) → Repository → Firebase (D-14: implementasi memakai Flutter).
 - Jangan mengandalkan UI untuk keamanan; semua akses data dijaga Security Rules.
 - Jangan mengarang fakta (API, versi library, kuota). Jika tidak yakin, katakan dan verifikasi.
 
