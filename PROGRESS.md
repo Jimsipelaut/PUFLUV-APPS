@@ -7,8 +7,8 @@ Deadline: **25 Oktober 2026**. Terakhir diperbarui: 2026-10-06.
 |---|---|---|
 | 1 | Analisis: requirement, scope, BR, use case | [x] DONE |
 | 2 | Desain: activity, sequence, class/ERD, arsitektur, UI flow | [x] DONE |
-| 3 | Project setup: Android Studio, Firebase (Spark), Git | [~] IN PROGRESS |
-| 4 | Authentication: register, login, logout, session | [ ] TODO |
+| 3 | Project setup: Android Studio, Firebase (Spark), Git | [x] DONE |
+| 4 | Authentication: register, login, logout, session | [x] DONE |
 | 5 | Couple: create/join, invite code, Security Rules | [ ] TODO |
 | 6 | Moment: kamera/galeri, kompres, caption, replace | [ ] TODO |
 | 7 | Partner moment realtime (+ P1: mood, reaction) | [ ] TODO |
