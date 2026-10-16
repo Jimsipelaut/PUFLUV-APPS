@@ -125,6 +125,7 @@ class AuthProvider with ChangeNotifier {
 
   String _parseAuthError(dynamic error) {
     final msg = error.toString();
+    debugPrint('AUTH ERROR DETAILS: $msg'); // <-- Log error asli untuk debugging
     if (msg.contains('user-not-found') || msg.contains('wrong-password') || msg.contains('invalid-credential')) {
       return 'Email atau password salah';
     } else if (msg.contains('email-already-in-use')) {
@@ -136,6 +137,6 @@ class AuthProvider with ChangeNotifier {
     } else if (msg.contains('network-request-failed')) {
       return 'Gagal terhubung ke jaringan';
     }
-    return 'Terjadi kesalahan. Silakan coba lagi.';
+    return 'Error: $msg';
   }
 }
