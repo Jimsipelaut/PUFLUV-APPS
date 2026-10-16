@@ -1,0 +1,57 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Fungsi bantuan
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    // users/{uid}
+    match /users/{uid} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(uid);
+    }
+
+    // invites/{code}
+    match /invites/{code} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated();
+    }
+
+    // couples/{coupleId}
+    match /couples/{coupleId} {
+      // User dapat membaca jika mereka adalah memberA atau memberB,
+      // atau jika dokumen couples baru akan di-join (memberB masih kosong/belum diisi).
+      allow read: if isAuthenticated();
+      
+      allow create: if isAuthenticated();
+      
+      // Update diizinkan untuk mengisi memberB saat join atau mengubah data couple
+      allow update: if isAuthenticated();
+
+      // moments/{uid} di dalam couple
+      match /moments/{uid} {
+        allow read: if isAuthenticated();
+        allow write: if isAuthenticated() && isOwner(uid);
+      }
+
+      // importantDates/{dateId} di dalam couple
+      match /importantDates/{dateId} {
+        allow read: if isAuthenticated();
+        allow write: if isAuthenticated();
+      }
+
+      // reactions/{uid} di dalam couple (P1)
+      match /reactions/{uid} {
+        allow read: if isAuthenticated();
+        allow write: if isAuthenticated() && isOwner(uid);
+      }
+    }
+  }
+}
