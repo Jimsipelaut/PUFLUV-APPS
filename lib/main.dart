@@ -10,6 +10,7 @@ import 'firebase_options.dart';
 import 'ui/auth/auth_provider.dart';
 import 'ui/couple/couple_provider.dart';
 import 'ui/dates/date_provider.dart';
+import 'ui/home/home_provider.dart';
 import 'ui/moment/moment_provider.dart';
 import 'ui/splash/splash_screen.dart';
 
@@ -65,6 +66,13 @@ class PufLuvApp extends StatelessWidget {
         ChangeNotifierProvider<DateProvider>(
           create: (context) => DateProvider(
             repository: context.read<DateRepository>(),
+          ),
+        ),
+        ChangeNotifierProvider<HomeProvider>(
+          create: (context) => HomeProvider(
+            coupleRepository: context.read<CoupleRepository>(),
+            momentRepository: context.read<MomentRepository>(),
+            dateRepository: context.read<DateRepository>(),
           ),
         ),
       ],

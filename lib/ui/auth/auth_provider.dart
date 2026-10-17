@@ -2,10 +2,13 @@ import 'package:flutter/foundation.dart';
 import '../../data/model/user_model.dart';
 import '../../data/repository/auth_repository.dart';
 
+import '../../data/utils/widget_sync_manager.dart';
+
 enum AuthStatus {
   initial,
   authenticated,
   unauthenticated,
+  loadFailed,
 }
 
 class AuthProvider with ChangeNotifier {
@@ -32,15 +35,17 @@ class AuthProvider with ChangeNotifier {
       final currentFirebaseUser = _repository.currentFirebaseUser;
       if (currentFirebaseUser != null) {
         _user = await _repository.getUserProfile(currentFirebaseUser.uid);
-        _status = (_user != null) ? AuthStatus.authenticated : AuthStatus.unauthenticated;
+        _status = (_user != null) ? AuthStatus.authenticated : AuthStatus.loadFailed;
       } else {
         _status = AuthStatus.unauthenticated;
         _user = null;
       }
     } catch (e) {
       _errorMessage = e.toString();
-      _status = AuthStatus.unauthenticated;
-      _user = null;
+      // Jangan langsung unauthenticated jika sesi ada tapi jaringan lambat / gagal load profile (H3)
+      _status = (_repository.currentFirebaseUser != null)
+          ? AuthStatus.loadFailed
+          : AuthStatus.unauthenticated;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -100,6 +105,7 @@ class AuthProvider with ChangeNotifier {
     _setLoading(true);
     try {
       await _repository.logout();
+      await WidgetSyncManager.clearWidgetData();
       _user = null;
       _status = AuthStatus.unauthenticated;
     } catch (e) {

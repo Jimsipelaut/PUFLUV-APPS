@@ -68,4 +68,26 @@ class WidgetSyncManager {
       debugPrint('[WidgetSyncManager] Failed to sync widget: $e\n$stack');
     }
   }
+
+  /// Menghapus seluruh data widget dan file foto lokal saat pengguna logout (H6)
+  static Future<void> clearWidgetData() async {
+    try {
+      final savedPath = await HomeWidget.getWidgetData<String>('partner_image_path');
+      if (savedPath != null) {
+        final f = File(savedPath);
+        if (await f.exists()) {
+          await f.delete();
+        }
+      }
+
+      await HomeWidget.saveWidgetData<String>('partner_image_path', null);
+      await HomeWidget.saveWidgetData<String>('partner_caption', null);
+      await HomeWidget.saveWidgetData<String>('nearest_countdown', null);
+
+      await HomeWidget.updateWidget(androidName: androidWidgetProvider);
+      debugPrint('[WidgetSyncManager] Widget data cleared on logout.');
+    } catch (e) {
+      debugPrint('[WidgetSyncManager] Failed to clear widget data: $e');
+    }
+  }
 }
