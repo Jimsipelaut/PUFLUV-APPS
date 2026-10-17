@@ -3,36 +3,46 @@ import 'dart:typed_data';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 class ImageProcessor {
-  /// Mengompres file gambar dari path, resize max 720px, kualitas 80,
-  /// lalu mengonversinya menjadi string Base64.
+  static const int maxHardLimitBytes = 400 * 1024; // 400 KB batas keras sesuai D-03
+
+  /// Mengompres file gambar dari path secara adaptif (M5, D-03).
+  /// Mengulang kompresi bertahap dengan menurunkan kualitas sampai ukuran <= 400KB.
   static Future<String> compressAndConvertToBase64(String filePath) async {
-    final Uint8List? compressedBytes = await FlutterImageCompress.compressWithFile(
-      filePath,
-      minWidth: 720,
-      minHeight: 720,
-      quality: 80,
-      format: CompressFormat.jpeg,
-    );
+    // Profil kompresi bertahap (lebar x tinggi, kualitas)
+    final compressionProfiles = [
+      {'minDim': 720, 'quality': 80},
+      {'minDim': 720, 'quality': 65},
+      {'minDim': 600, 'quality': 55},
+      {'minDim': 480, 'quality': 45},
+      {'minDim': 360, 'quality': 35},
+    ];
 
-    if (compressedBytes == null) {
-      throw Exception('Gagal mengompresi gambar');
-    }
+    Uint8List? compressed;
 
-    // Pastikan ukuran tidak melebihi batas keras Firestore 1MB (target < 400KB)
-    if (compressedBytes.lengthInBytes > 400 * 1024) {
-      // Kompres ulang dengan kualitas lebih rendah jika masih > 400KB
-      final Uint8List? deeperCompressed = await FlutterImageCompress.compressWithFile(
+    for (final profile in compressionProfiles) {
+      final minDim = profile['minDim']!;
+      final quality = profile['quality']!;
+
+      compressed = await FlutterImageCompress.compressWithFile(
         filePath,
-        minWidth: 600,
-        minHeight: 600,
-        quality: 60,
+        minWidth: minDim,
+        minHeight: minDim,
+        quality: quality,
         format: CompressFormat.jpeg,
       );
-      if (deeperCompressed != null) {
-        return base64Encode(deeperCompressed);
+
+      if (compressed != null && compressed.lengthInBytes <= maxHardLimitBytes) {
+        return base64Encode(compressed);
       }
     }
 
-    return base64Encode(compressedBytes);
+    if (compressed != null && compressed.lengthInBytes <= 550 * 1024) {
+      // Masih aman di bawah batas rules Firestore (600.000 char base64)
+      return base64Encode(compressed);
+    }
+
+    throw Exception(
+      'Ukuran foto terlalu besar untuk disimpan gratis. Harap pilih foto lain atau potong sebagian.',
+    );
   }
 }

@@ -126,50 +126,109 @@ class DateListScreen extends StatelessWidget {
                 formatted = DateFormat('dd MMM yyyy').format(parsedDate);
               }
 
-              return Card(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  title: Text(
-                    d.title,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+              return Dismissible(
+                key: Key(d.dateId),
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.redAccent.shade100,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(Icons.calendar_today_outlined, size: 14, color: Colors.grey),
-                          const SizedBox(width: 4),
-                          Text('$formatted${d.recurring ? ' • Tahunan' : ''}',
-                              style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                        ],
+                      Icon(Icons.delete_outline, color: Colors.white, size: 24),
+                      SizedBox(width: 8),
+                      Text(
+                        'Hapus',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
-                  trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: _countdownColor(days).withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: _countdownColor(days).withValues(alpha: 0.3)),
+                ),
+                confirmDismiss: (_) async {
+                  return await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Hapus tanggal?'),
+                      content: Text('Hapus "${d.title}"?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(false),
+                          child: const Text('Batal'),
+                        ),
+                        FilledButton(
+                          style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
+                          onPressed: () => Navigator.of(ctx).pop(true),
+                          child: const Text('Hapus'),
+                        ),
+                      ],
                     ),
-                    child: Text(
-                      _countdownText(d),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: _countdownColor(days),
+                  );
+                },
+                onDismissed: (_) async {
+                  try {
+                    await DateRepository().deleteDate(coupleId: coupleId, dateId: d.dateId);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('"${d.title}" berhasil dihapus')),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Gagal menghapus: $e')),
+                      );
+                    }
+                  }
+                },
+                child: Card(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    title: Text(
+                      d.title,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(Icons.calendar_today_outlined, size: 14, color: Colors.grey),
+                            const SizedBox(width: 4),
+                            Text('$formatted${d.recurring ? ' • Tahunan' : ''}',
+                                style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                          ],
+                        ),
+                      ],
+                    ),
+                    trailing: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: _countdownColor(days).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: _countdownColor(days).withValues(alpha: 0.3)),
+                      ),
+                      child: Text(
+                        _countdownText(d),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: _countdownColor(days),
+                        ),
                       ),
                     ),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => DateFormScreen(existing: d)),
+                      );
+                    },
+                    onLongPress: () => _confirmDelete(context, coupleId, d),
                   ),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => DateFormScreen(existing: d)),
-                    );
-                  },
-                  onLongPress: () => _confirmDelete(context, coupleId, d),
                 ),
               );
             },

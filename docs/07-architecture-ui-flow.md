@@ -2,7 +2,7 @@
 
 ## Arsitektur
 ```text
-UI (Compose)  →  ViewModel  →  Repository  →  Firebase (Auth, Firestore)
+UI (Flutter Widgets)  →  State Management (Provider / ChangeNotifier)  →  Repository  →  Firebase (Auth, Firestore)
    Screen          StateFlow       Result<T> / Flow
 ```
 - Satu `UiState` per layar via `StateFlow`; layar hanya membaca state dan memanggil fungsi ViewModel.
@@ -30,9 +30,9 @@ com.<paket>.ourspace/
     └── settings/     SettingsScreen (P1: nama, kode undangan, Logout)
 ```
 
-## Dependensi yang diizinkan (D-13)
-Compose + Material 3 · Navigation Compose · Firebase BoM (Auth, Firestore) · Coroutines/Flow.
-Foto Base64 di-decode manual ke `Bitmap` (tanpa Coil). **Tanpa Firebase Storage/Analytics.**
+## Dependensi yang diizinkan (per D-13 & D-14)
+Flutter + Material 3 · Provider · FlutterFire (`firebase_core`, `firebase_auth`, `cloud_firestore`) · `home_widget` · `flutter_image_compress`.
+Foto Base64 dikompresi adaptif dan di-decode ke `Uint8List` dengan memori cache di `HomeProvider`. **Tanpa Firebase Storage/Analytics.**
 
 ## UI Flow
 ```mermaid

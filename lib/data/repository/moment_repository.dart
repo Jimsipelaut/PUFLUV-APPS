@@ -28,7 +28,28 @@ class MomentRepository {
       updatedAt: Timestamp.now(),
     );
 
-    await momentRef.set(moment.toMap(), SetOptions(merge: true));
+    // D-04: Menimpa dokumen moments/{uid} secara atomik tanpa merge flag
+    await momentRef.set(moment.toMap());
+  }
+
+  /// Update caption dan/atau mood saja tanpa upload ulang data foto (M8)
+  Future<void> updateCaptionOrMood({
+    required String coupleId,
+    required String uid,
+    required String caption,
+    String? mood,
+  }) async {
+    final momentRef = _firestore
+        .collection('couples')
+        .doc(coupleId)
+        .collection('moments')
+        .doc(uid);
+
+    await momentRef.update({
+      'caption': caption,
+      if (mood != null) 'mood': mood,
+      'updatedAt': Timestamp.now(),
+    });
   }
 
   Future<MomentModel?> getMoment({

@@ -15,11 +15,13 @@ class MomentProvider with ChangeNotifier {
         _picker = picker ?? ImagePicker();
 
   bool _isLoading = false;
+  bool _isCompressing = false;
   String? _errorMessage;
   String? _selectedImageBase64;
   File? _selectedImageFile;
 
   bool get isLoading => _isLoading;
+  bool get isCompressing => _isCompressing;
   String? get errorMessage => _errorMessage;
   String? get selectedImageBase64 => _selectedImageBase64;
   File? get selectedImageFile => _selectedImageFile;
@@ -29,12 +31,16 @@ class MomentProvider with ChangeNotifier {
     try {
       final pickedFile = await _picker.pickImage(source: source);
       if (pickedFile != null) {
+        _isCompressing = true;
+        notifyListeners();
+
         _selectedImageFile = File(pickedFile.path);
         _selectedImageBase64 = await ImageProcessor.compressAndConvertToBase64(pickedFile.path);
-        notifyListeners();
       }
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
+    } finally {
+      _isCompressing = false;
       notifyListeners();
     }
   }

@@ -18,6 +18,17 @@ class _MomentEditScreenState extends State<MomentEditScreen> {
   final _captionController = TextEditingController();
   MomentModel? _existingMoment;
   bool _isLoadingExisting = true;
+  String? _selectedMood;
+
+  // 6 Pilihan Mood standar sesuai spesifikasi Audit Bagian 4
+  final List<Map<String, String>> _moodOptions = const [
+    {'emoji': '😊', 'label': 'Senang'},
+    {'emoji': '🥰', 'label': 'Sayang'},
+    {'emoji': '😴', 'label': 'Lelah'},
+    {'emoji': '😤', 'label': 'Kesal'},
+    {'emoji': '😢', 'label': 'Sedih'},
+    {'emoji': '🤒', 'label': 'Kurang enak badan'},
+  ];
 
   @override
   void initState() {
@@ -43,6 +54,7 @@ class _MomentEditScreenState extends State<MomentEditScreen> {
         setState(() {
           _existingMoment = moment;
           _captionController.text = moment.caption;
+          _selectedMood = moment.mood;
         });
       }
     } catch (_) {
@@ -105,6 +117,7 @@ class _MomentEditScreenState extends State<MomentEditScreen> {
       uid: user.uid,
       caption: _captionController.text.trim(),
       existingPhotoBase64: _existingMoment?.photoBase64,
+      mood: _selectedMood,
     );
 
     if (!mounted) return;
@@ -186,6 +199,46 @@ class _MomentEditScreenState extends State<MomentEditScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
+                        const Text(
+                          'Bagaimana perasaanmu saat ini? (Opsional)',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          height: 52,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: _moodOptions.length,
+                            separatorBuilder: (_, __) => const SizedBox(width: 8),
+                            itemBuilder: (context, index) {
+                              final item = _moodOptions[index];
+                              final emoji = item['emoji']!;
+                              final isSelected = _selectedMood == emoji;
+
+                              return ChoiceChip(
+                                label: Text(
+                                  '$emoji ${item['label']}',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: isSelected ? Colors.pink : Colors.black87,
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                  ),
+                                ),
+                                selected: isSelected,
+                                selectedColor: Colors.pink.shade50,
+                                side: BorderSide(
+                                  color: isSelected ? Colors.pinkAccent : Colors.grey.shade300,
+                                ),
+                                onSelected: (selected) {
+                                  setState(() {
+                                    _selectedMood = selected ? emoji : null;
+                                  });
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 20),
                         TextField(
                           controller: _captionController,
                           maxLines: 3,
@@ -205,6 +258,22 @@ class _MomentEditScreenState extends State<MomentEditScreen> {
   }
 
   Widget _buildImageWidget(MomentProvider provider) {
+    if (provider.isCompressing) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            CircularProgressIndicator(strokeWidth: 2),
+            SizedBox(height: 12),
+            Text(
+              'Mengompresi & menyiapkan foto...',
+              style: TextStyle(color: Colors.grey, fontSize: 13),
+            ),
+          ],
+        ),
+      );
+    }
+
     if (provider.selectedImageFile != null) {
       return Image.file(
         provider.selectedImageFile!,

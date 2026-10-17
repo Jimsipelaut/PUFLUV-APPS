@@ -115,6 +115,20 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> sendPasswordReset(String email) async {
+    _setLoading(true);
+    _clearError();
+    try {
+      await _repository.sendPasswordResetEmail(email.trim());
+      return true;
+    } catch (e) {
+      _errorMessage = _parseAuthError(e);
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();

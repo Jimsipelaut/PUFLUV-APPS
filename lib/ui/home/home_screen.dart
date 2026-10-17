@@ -346,6 +346,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   title,
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
+                const Spacer(),
+                if (moment?.mood != null && moment!.mood!.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.pink.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.pink.shade200, width: 0.8),
+                    ),
+                    child: Text(
+                      moment.mood!,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ),
               ],
             ),
             const SizedBox(height: 12),
