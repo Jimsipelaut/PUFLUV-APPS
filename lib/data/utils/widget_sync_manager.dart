@@ -30,15 +30,26 @@ class WidgetSyncManager {
         await HomeWidget.saveWidgetData<String>('partner_image_path', null);
       }
 
-      // 2. Simpan Caption & Mood
-      if (partnerMoment != null && partnerMoment.caption.isNotEmpty) {
-        final moodPrefix = partnerMoment.mood != null ? '${partnerMoment.mood} ' : '';
+      // 2. Simpan Caption & Mood / Time ago
+      if (partnerMoment != null) {
         await HomeWidget.saveWidgetData<String>(
           'partner_caption',
-          '$moodPrefix${partnerMoment.caption}',
+          partnerMoment.caption.isNotEmpty ? partnerMoment.caption : 'Moment baru',
+        );
+
+        final diff = DateTime.now().difference(partnerMoment.updatedAt.toDate());
+        String timeAgo = diff.inMinutes < 60
+            ? '${diff.inMinutes} mnt lalu'
+            : (diff.inHours < 24 ? '${diff.inHours} jam lalu' : '${diff.inDays} hr lalu');
+        final moodSuffix = partnerMoment.mood != null ? ' · ${partnerMoment.mood}' : '';
+
+        await HomeWidget.saveWidgetData<String>(
+          'partner_time_ago',
+          '$timeAgo$moodSuffix',
         );
       } else {
         await HomeWidget.saveWidgetData<String>('partner_caption', null);
+        await HomeWidget.saveWidgetData<String>('partner_time_ago', null);
       }
 
       // 3. Simpan Countdown Terdekat (hanya daysUntil >= 0)
@@ -50,13 +61,27 @@ class WidgetSyncManager {
         if (upcoming.isNotEmpty) {
           final nearest = upcoming.first;
           final days = nearest.daysUntil(now);
-          final text = days == 0 ? 'Hari ini: ${nearest.title}' : '$days hr: ${nearest.title}';
-          await HomeWidget.saveWidgetData<String>('nearest_countdown', text);
+          await HomeWidget.saveWidgetData<String>(
+            'nearest_event_title',
+            nearest.title.toUpperCase(),
+          );
+          await HomeWidget.saveWidgetData<String>(
+            'nearest_countdown_number',
+            '$days',
+          );
+          await HomeWidget.saveWidgetData<String>(
+            'nearest_countdown_label',
+            days == 0 ? 'hari ini' : 'hari lagi',
+          );
         } else {
-          await HomeWidget.saveWidgetData<String>('nearest_countdown', null);
+          await HomeWidget.saveWidgetData<String>('nearest_event_title', null);
+          await HomeWidget.saveWidgetData<String>('nearest_countdown_number', null);
+          await HomeWidget.saveWidgetData<String>('nearest_countdown_label', null);
         }
       } else {
-        await HomeWidget.saveWidgetData<String>('nearest_countdown', null);
+        await HomeWidget.saveWidgetData<String>('nearest_event_title', null);
+        await HomeWidget.saveWidgetData<String>('nearest_countdown_number', null);
+        await HomeWidget.saveWidgetData<String>('nearest_countdown_label', null);
       }
 
       // 4. Minta sistem Android update UI AppWidget
@@ -82,7 +107,10 @@ class WidgetSyncManager {
 
       await HomeWidget.saveWidgetData<String>('partner_image_path', null);
       await HomeWidget.saveWidgetData<String>('partner_caption', null);
-      await HomeWidget.saveWidgetData<String>('nearest_countdown', null);
+      await HomeWidget.saveWidgetData<String>('partner_time_ago', null);
+      await HomeWidget.saveWidgetData<String>('nearest_event_title', null);
+      await HomeWidget.saveWidgetData<String>('nearest_countdown_number', null);
+      await HomeWidget.saveWidgetData<String>('nearest_countdown_label', null);
 
       await HomeWidget.updateWidget(androidName: androidWidgetProvider);
       debugPrint('[WidgetSyncManager] Widget data cleared on logout.');

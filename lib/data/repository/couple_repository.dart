@@ -128,4 +128,17 @@ class CoupleRepository {
     if (!doc.exists || doc.data() == null) return null;
     return CoupleModel.fromMap(doc.id, doc.data()!);
   }
+
+  /// Update daftar custom reaction tags (D-16, maksimal 6 tag, panjang <= 16 karakter)
+  Future<void> updateReactionTags(String coupleId, List<String> tags) async {
+    final cleanTags = tags
+        .map((t) => t.trim())
+        .where((t) => t.isNotEmpty)
+        .take(6)
+        .toList();
+
+    await _firestore.collection('couples').doc(coupleId).update({
+      'reactionTags': cleanTags,
+    });
+  }
 }

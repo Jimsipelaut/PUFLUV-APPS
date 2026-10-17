@@ -22,12 +22,15 @@ class PufluvWidgetProvider : AppWidgetProvider() {
             val widgetData = HomeWidgetPlugin.getData(context)
             val views = RemoteViews(context.packageName, R.layout.pufluv_widget_layout)
 
-            // 1. Ambil teks caption & countdown
+            // 1. Ambil data dari shared preferences
             val caption = widgetData.getString("partner_caption", null)
-            val countdown = widgetData.getString("nearest_countdown", null)
+            val timeAgo = widgetData.getString("partner_time_ago", null)
+            val eventTitle = widgetData.getString("nearest_event_title", null)
+            val countdownNum = widgetData.getString("nearest_countdown_number", null)
+            val countdownLabel = widgetData.getString("nearest_countdown_label", null)
             val imagePath = widgetData.getString("partner_image_path", null)
 
-            // Update teks
+            // Update teks caption & waktu
             if (!caption.isNullOrBlank()) {
                 views.setTextViewText(R.id.widget_caption, caption)
                 views.setViewVisibility(R.id.widget_caption, View.VISIBLE)
@@ -35,11 +38,21 @@ class PufluvWidgetProvider : AppWidgetProvider() {
                 views.setViewVisibility(R.id.widget_caption, View.GONE)
             }
 
-            if (!countdown.isNullOrBlank()) {
-                views.setTextViewText(R.id.widget_countdown, countdown)
-                views.setViewVisibility(R.id.widget_countdown, View.VISIBLE)
+            if (!timeAgo.isNullOrBlank()) {
+                views.setTextViewText(R.id.widget_time_ago, timeAgo)
+                views.setViewVisibility(R.id.widget_time_ago, View.VISIBLE)
             } else {
-                views.setViewVisibility(R.id.widget_countdown, View.GONE)
+                views.setViewVisibility(R.id.widget_time_ago, View.GONE)
+            }
+
+            // Update countdown
+            if (!countdownNum.isNullOrBlank()) {
+                views.setTextViewText(R.id.widget_event_title, eventTitle ?: "HARI PENTING")
+                views.setTextViewText(R.id.widget_countdown_number, countdownNum)
+                views.setTextViewText(R.id.widget_countdown_label, countdownLabel ?: "hari lagi")
+                views.setViewVisibility(R.id.widget_countdown_container, View.VISIBLE)
+            } else {
+                views.setViewVisibility(R.id.widget_countdown_container, View.GONE)
             }
 
             // Update foto dari local file path
