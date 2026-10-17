@@ -205,7 +205,7 @@ class _DateFormScreenState extends State<DateFormScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 12),
-                                  Switch(
+                                  _CustomSwitch(
                                     value: _recurring,
                                     onChanged: (v) => setState(() => _recurring = v),
                                   ),
@@ -230,6 +230,44 @@ class _DateFormScreenState extends State<DateFormScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _CustomSwitch extends StatelessWidget {
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _CustomSwitch({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => onChanged(!value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        width: 52,
+        height: 32,
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: value ? AppColors.accent : AppColors.bg,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: value ? AppColors.accent : AppColors.outline,
+            width: 1.2,
+          ),
+        ),
+        alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          width: 22,
+          height: 22,
+          decoration: BoxDecoration(
+            color: value ? AppColors.onAccent : AppColors.muted,
+            shape: BoxShape.circle,
+          ),
+        ),
       ),
     );
   }

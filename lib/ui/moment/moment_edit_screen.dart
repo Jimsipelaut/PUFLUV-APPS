@@ -210,7 +210,7 @@ class _MomentEditScreenState extends State<MomentEditScreen> {
                                 AppTextField(
                                   controller: _captionController,
                                   label: 'Caption',
-                                  hint: 'Tuliskan perasaan atau momen hari ini...',
+                                  hint: 'lagi makan nih hehe',
                                   maxLines: 3,
                                   textCapitalization: TextCapitalization.sentences,
                                 ),

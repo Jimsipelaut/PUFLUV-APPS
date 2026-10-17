@@ -26,7 +26,11 @@ class DateListScreen extends StatelessWidget {
           SizedBox(width: featured ? 8 : 6),
           Text(
             'hari lagi',
-            style: AppText.body(featured ? 14 : 12, color: AppColors.textSoft),
+            style: TextStyle(
+              fontFamily: 'DM Sans',
+              fontSize: featured ? 14 : 12,
+              color: AppColors.textSoft,
+            ),
           ),
         ],
       );
