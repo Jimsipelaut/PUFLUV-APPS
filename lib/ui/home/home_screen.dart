@@ -200,12 +200,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           stream: DateRepository().observeDates(coupleId: coupleId),
                           builder: (context, dateSnapshot) {
                             final dates = dateSnapshot.data ?? [];
-                            if (dates.isEmpty) return const SizedBox.shrink();
+                            final now = DateTime.now();
+                            final upcomingDates = dates.where((d) => d.daysUntil(now) >= 0).toList();
+                            if (upcomingDates.isEmpty) return const SizedBox.shrink();
 
-                            // Cari tanggal terdekat
-                            dates.sort((a, b) => a.daysUntil(DateTime.now()).compareTo(b.daysUntil(DateTime.now())));
-                            final nearest = dates.first;
-                            final days = nearest.daysUntil(DateTime.now());
+                            // Cari tanggal terdekat mendatang (daysUntil >= 0)
+                            upcomingDates.sort((a, b) => a.daysUntil(now).compareTo(b.daysUntil(now)));
+                            final nearest = upcomingDates.first;
+                            final days = nearest.daysUntil(now);
 
                             // Sync juga tanggal terdekat ke Widget native
                             WidgetsBinding.instance.addPostFrameCallback((_) {

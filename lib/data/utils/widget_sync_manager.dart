@@ -41,15 +41,20 @@ class WidgetSyncManager {
         await HomeWidget.saveWidgetData<String>('partner_caption', null);
       }
 
-      // 3. Simpan Countdown Terdekat
+      // 3. Simpan Countdown Terdekat (hanya daysUntil >= 0)
       if (dates != null && dates.isNotEmpty) {
-        final sorted = List<ImportantDateModel>.from(dates)
-          ..sort((a, b) => a.daysUntil(DateTime.now()).compareTo(b.daysUntil(DateTime.now())));
-        final nearest = sorted.first;
-        final days = nearest.daysUntil(DateTime.now());
-        final text = days == 0 ? 'Hari ini: ${nearest.title}' : '$days hr: ${nearest.title}';
+        final now = DateTime.now();
+        final upcoming = dates.where((d) => d.daysUntil(now) >= 0).toList()
+          ..sort((a, b) => a.daysUntil(now).compareTo(b.daysUntil(now)));
 
-        await HomeWidget.saveWidgetData<String>('nearest_countdown', text);
+        if (upcoming.isNotEmpty) {
+          final nearest = upcoming.first;
+          final days = nearest.daysUntil(now);
+          final text = days == 0 ? 'Hari ini: ${nearest.title}' : '$days hr: ${nearest.title}';
+          await HomeWidget.saveWidgetData<String>('nearest_countdown', text);
+        } else {
+          await HomeWidget.saveWidgetData<String>('nearest_countdown', null);
+        }
       } else {
         await HomeWidget.saveWidgetData<String>('nearest_countdown', null);
       }

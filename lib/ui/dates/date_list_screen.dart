@@ -88,9 +88,23 @@ class DateListScreen extends StatelessWidget {
             );
           }
 
-          // Sort by daysUntil ascending (closest first)
+          // Urutkan: tanggal mendatang (daysUntil >= 0) terurut lebih dulu (terdekat di atas),
+          // lalu tanggal lampau (daysUntil < 0) ditaruh di bagian bawah.
+          final now = DateTime.now();
           final sorted = List<ImportantDateModel>.from(dates);
-          sorted.sort((a, b) => a.daysUntil(DateTime.now()).compareTo(b.daysUntil(DateTime.now())));
+          sorted.sort((a, b) {
+            final daysA = a.daysUntil(now);
+            final daysB = b.daysUntil(now);
+            if (daysA >= 0 && daysB >= 0) {
+              return daysA.compareTo(daysB);
+            } else if (daysA >= 0 && daysB < 0) {
+              return -1; // Mendatang lebih awal
+            } else if (daysA < 0 && daysB >= 0) {
+              return 1; // Lampau di bawah
+            } else {
+              return daysB.compareTo(daysA); // Lampau: yang paling baru lewat di atas
+            }
+          });
 
           return ListView.separated(
             padding: const EdgeInsets.all(16),

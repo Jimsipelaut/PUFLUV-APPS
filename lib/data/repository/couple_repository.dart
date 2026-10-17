@@ -15,11 +15,22 @@ class CoupleRepository {
   }
 
   Future<CoupleModel> createCouple(String userId) async {
-    // 1. Buat coupleId baru
+    final userRef = _firestore.collection('users').doc(userId);
+
+    // 1. Validasi awal status user (BR-01, FR-03)
+    final userSnap = await userRef.get();
+    if (userSnap.exists && userSnap.data() != null) {
+      final existingCid = userSnap.data()!['coupleId'] as String?;
+      if (existingCid != null && existingCid.isNotEmpty) {
+        throw Exception('Anda sudah terhubung ke dalam ruang couple');
+      }
+    }
+
+    // 2. Buat coupleId baru
     final coupleRef = _firestore.collection('couples').doc();
     final coupleId = coupleRef.id;
 
-    // 2. Generate invite code unik
+    // 3. Generate invite code unik
     String inviteCode = _generateInviteCode();
     bool codeExists = true;
     while (codeExists) {
@@ -40,8 +51,16 @@ class CoupleRepository {
       createdAt: now,
     );
 
-    // 3. Transaksi Firestore untuk atomitas
+    // 4. Transaksi Firestore untuk atomisitas (create couple + invite + user update)
     await _firestore.runTransaction((transaction) async {
+      final uDoc = await transaction.get(userRef);
+      if (uDoc.exists && uDoc.data() != null) {
+        final cid = uDoc.data()!['coupleId'] as String?;
+        if (cid != null && cid.isNotEmpty) {
+          throw Exception('Anda sudah memiliki ruang couple');
+        }
+      }
+
       // Simpan couple
       transaction.set(coupleRef, couple.toMap());
 
@@ -50,7 +69,6 @@ class CoupleRepository {
       transaction.set(inviteRef, {'coupleId': coupleId});
 
       // Update user coupleId
-      final userRef = _firestore.collection('users').doc(userId);
       transaction.update(userRef, {'coupleId': coupleId});
     });
 
@@ -70,27 +88,39 @@ class CoupleRepository {
     final coupleRef = _firestore.collection('couples').doc(coupleId);
     final userRef = _firestore.collection('users').doc(userId);
 
-    // 2. Baca data couple
-    final coupleSnapshot = await coupleRef.get();
-    if (!coupleSnapshot.exists || coupleSnapshot.data() == null) {
-      throw Exception('Data couple tidak ditemukan');
-    }
+    // 2. Jalankan runTransaction secara atomik (D-06, BR-01, FR-03)
+    return await _firestore.runTransaction((transaction) async {
+      // Baca user snapshot dalam transaksi
+      final userSnap = await transaction.get(userRef);
+      if (userSnap.exists && userSnap.data() != null) {
+        final existingCid = userSnap.data()!['coupleId'] as String?;
+        if (existingCid != null && existingCid.isNotEmpty) {
+          throw Exception('Anda sudah terhubung ke dalam ruang couple lain');
+        }
+      }
 
-    final couple = CoupleModel.fromMap(coupleId, coupleSnapshot.data()!);
+      // Baca couple snapshot dalam transaksi
+      final coupleSnapshot = await transaction.get(coupleRef);
+      if (!coupleSnapshot.exists || coupleSnapshot.data() == null) {
+        throw Exception('Data couple tidak ditemukan');
+      }
 
-    if (couple.isFull) {
-      throw Exception('Couple space ini sudah penuh (berisi 2 orang)');
-    }
+      final couple = CoupleModel.fromMap(coupleId, coupleSnapshot.data()!);
 
-    if (couple.memberA == userId) {
-      throw Exception('Anda tidak dapat bergabung dengan couple Anda sendiri');
-    }
+      if (couple.isFull) {
+        throw Exception('Couple space ini sudah penuh (berisi 2 orang)');
+      }
 
-    // 3. Update data secara langsung (bukan transaction agar toleran jaringan)
-    await coupleRef.update({'memberB': userId});
-    await userRef.update({'coupleId': coupleId});
+      if (couple.memberA == userId) {
+        throw Exception('Anda tidak dapat bergabung dengan couple Anda sendiri');
+      }
 
-    return couple.copyWith(memberB: userId);
+      // Update couple slot memberB dan user coupleId secara atomik
+      transaction.update(coupleRef, {'memberB': userId});
+      transaction.update(userRef, {'coupleId': coupleId});
+
+      return couple.copyWith(memberB: userId);
+    });
   }
 
   Future<CoupleModel?> getCouple(String coupleId) async {

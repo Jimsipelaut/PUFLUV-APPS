@@ -51,18 +51,34 @@ class ImportantDateModel {
     );
   }
 
-  /// Menghitung tanggal kemunculan berikutnya (tahun ini atau tahun depan jika recurring)
+  /// Menghitung tanggal kemunculan berikutnya (D-07, D-08, M9)
   DateTime nextOccurrence(DateTime today) {
     if (date.isEmpty) return today;
     try {
       final parsed = DateFormat('yyyy-MM-dd').parseStrict(date);
+      final todayDate = DateTime(today.year, today.month, today.day);
+
       if (!recurring) {
         return DateTime(parsed.year, parsed.month, parsed.day);
       }
-      // Recurring: setiap tahun di bulan & hari yang sama
-      var occurrence = DateTime(today.year, parsed.month, parsed.day);
-      if (occurrence.isBefore(DateTime(today.year, today.month, today.day))) {
-        occurrence = DateTime(today.year + 1, parsed.month, parsed.day);
+
+      // Jika tahun awal recurring di masa depan, gunakan tanggal awal tersebut
+      if (DateTime(parsed.year, parsed.month, parsed.day).isAfter(todayDate)) {
+        return DateTime(parsed.year, parsed.month, parsed.day);
+      }
+
+      // Recurring tahunan: tangani kabisat 29 Februari (D-07 -> 28 Feb di tahun non-kabisat)
+      DateTime makeOccurrence(int year, int month, int day) {
+        if (month == 2 && day == 29) {
+          final isLeapYear = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+          return isLeapYear ? DateTime(year, 2, 29) : DateTime(year, 2, 28);
+        }
+        return DateTime(year, month, day);
+      }
+
+      var occurrence = makeOccurrence(today.year, parsed.month, parsed.day);
+      if (occurrence.isBefore(todayDate)) {
+        occurrence = makeOccurrence(today.year + 1, parsed.month, parsed.day);
       }
       return occurrence;
     } catch (_) {
