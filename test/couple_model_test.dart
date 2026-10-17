@@ -16,11 +16,11 @@ void main() {
       expect(couple.isFull, true);
     });
 
-    test('isFull should return false when memberB is empty', () {
+    test('isFull should return false when memberB is null or empty', () {
       final couple = CoupleModel(
         coupleId: 'cid_1',
         memberA: 'user_1',
-        memberB: '',
+        memberB: null,
         inviteCode: 'ABC123',
         createdAt: Timestamp.now(),
       );

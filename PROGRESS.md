@@ -9,10 +9,10 @@ Deadline: **25 Oktober 2026**. Terakhir diperbarui: 2026-10-06.
 | 2 | Desain: activity, sequence, class/ERD, arsitektur, UI flow | [x] DONE |
 | 3 | Project setup: Android Studio, Firebase (Spark), Git | [x] DONE |
 | 4 | Authentication: register, login, logout, session | [x] DONE |
-| 5 | Couple: create/join, invite code, Security Rules | [x] DONE |
-| 6 | Moment: kamera/galeri, kompres, caption, replace | [x] DONE |
-| 7 | Partner moment realtime (+ P1: mood, reaction) | [x] DONE |
-| 8 | Important Dates CRUD + countdown | [x] DONE |
+| 5 | Couple: create/join, invite code, Security Rules | [~] Rules & model disesuaikan (C1), join transaksi (H2) |
+| 6 | Moment: kamera/galeri, kompres, caption, replace | [~] Kode ada, verifikasi kompres batas keras (M5) |
+| 7 | Partner moment realtime (+ P1: mood, reaction) | [~] Kode ada, HomeProvider & UI reaksi direncanakan |
+| 8 | Important Dates CRUD + countdown | [~] Tanggal lampau diperbaiki (H1) |
 | 9 | (P1) Reminder / notifikasi | [ ] TODO |
 | 10 | UI polish minimal (empty/loading/error) | [ ] TODO |
 | 11 | Testing dua perangkat | [ ] TODO |
@@ -38,3 +38,4 @@ Lihat `docs/02-mvp-and-priorities.md` bagian 5 (5 skenario dua perangkat).
 - 2026-10-06: Fase 1 selesai. Fase 2 dokumen ditulis. Keputusan Rp0: tanpa Firebase Storage (D-02).
 - 2026-10-06: Fase 2 DONE; 3.1 selesai (repo ter-push).
 - 2026-10-16: Keputusan D-14 approved (migrasi implementasi ke Flutter). Setup Flutter diinisialisasi: package name `com.pufluv.app`, konfigurasi Firebase plugin & google-services.json, dependensi `firebase_core`, `firebase_auth`, `cloud_firestore`, `provider`, `intl`. Proyek dan status di-push ke GitHub untuk diteruskan via Claude. Fase 3 [~] in progress menuju Fase 4.
+- 2026-10-17: Audit repo menyeluruh (09-audit-dan-rencana-perbaikan.md). Eksekusi perbaikan C1 & C2: unifikasi Security Rules ke `firebase/firestore.rules`, hapus rules root yang longgar, ubah `memberB` menjadi `null` pada model & repository untuk menjamin isolasi data user C (DoD 5), update DECISIONS.md (D-16, D-17).

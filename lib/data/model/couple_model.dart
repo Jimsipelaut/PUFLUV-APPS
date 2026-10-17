@@ -3,27 +3,30 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class CoupleModel {
   final String coupleId;
   final String memberA;
-  final String memberB;
+  final String? memberB;
   final String inviteCode;
   final Timestamp createdAt;
+  final List<dynamic>? reactionTags;
 
   CoupleModel({
     required this.coupleId,
     required this.memberA,
-    required this.memberB,
+    this.memberB,
     required this.inviteCode,
     required this.createdAt,
+    this.reactionTags,
   });
 
-  bool get isFull => memberA.isNotEmpty && memberB.isNotEmpty;
+  bool get isFull => memberA.isNotEmpty && memberB != null && memberB!.isNotEmpty;
 
   factory CoupleModel.fromMap(String coupleId, Map<String, dynamic> data) {
     return CoupleModel(
       coupleId: coupleId,
       memberA: data['memberA'] as String? ?? '',
-      memberB: data['memberB'] as String? ?? '',
+      memberB: data['memberB'] as String?,
       inviteCode: data['inviteCode'] as String? ?? '',
       createdAt: data['createdAt'] as Timestamp? ?? Timestamp.now(),
+      reactionTags: data['reactionTags'] as List<dynamic>?,
     );
   }
 
@@ -33,6 +36,7 @@ class CoupleModel {
       'memberB': memberB,
       'inviteCode': inviteCode,
       'createdAt': createdAt,
+      if (reactionTags != null) 'reactionTags': reactionTags,
     };
   }
 
@@ -42,6 +46,7 @@ class CoupleModel {
     String? memberB,
     String? inviteCode,
     Timestamp? createdAt,
+    List<dynamic>? reactionTags,
   }) {
     return CoupleModel(
       coupleId: coupleId ?? this.coupleId,
@@ -49,6 +54,7 @@ class CoupleModel {
       memberB: memberB ?? this.memberB,
       inviteCode: inviteCode ?? this.inviteCode,
       createdAt: createdAt ?? this.createdAt,
+      reactionTags: reactionTags ?? this.reactionTags,
     );
   }
 }

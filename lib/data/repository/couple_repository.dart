@@ -35,7 +35,7 @@ class CoupleRepository {
     final couple = CoupleModel(
       coupleId: coupleId,
       memberA: userId,
-      memberB: '',
+      memberB: null,
       inviteCode: inviteCode,
       createdAt: now,
     );
@@ -78,7 +78,7 @@ class CoupleRepository {
 
     final couple = CoupleModel.fromMap(coupleId, coupleSnapshot.data()!);
 
-    if (couple.memberB.isNotEmpty) {
+    if (couple.isFull) {
       throw Exception('Couple space ini sudah penuh (berisi 2 orang)');
     }
 

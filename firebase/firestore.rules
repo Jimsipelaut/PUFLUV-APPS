@@ -1,72 +1,76 @@
-// DRAFT — belum diuji. Wajib diuji di Fase 5 (Firebase Emulator / Rules Playground)
-// terhadap skenario privasi: user C tidak boleh membaca apa pun milik couple A+B.
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    function signedIn() {
-      return request.auth != null;
+    function signedIn() { return request.auth != null; }
+    function cdata(cid) {
+      return get(/databases/$(database)/documents/couples/$(cid)).data;
     }
-
-    function coupleDoc(cid) {
-      return get(/databases/$(database)/documents/couples/$(cid));
-    }
-
     function isMember(cid) {
       return signedIn()
         && exists(/databases/$(database)/documents/couples/$(cid))
-        && (request.auth.uid == coupleDoc(cid).data.memberA
-            || request.auth.uid == coupleDoc(cid).data.memberB);
+        && (request.auth.uid == cdata(cid).memberA
+            || request.auth.uid == cdata(cid).memberB);
     }
 
     match /users/{uid} {
       allow read, write: if signedIn() && request.auth.uid == uid;
     }
 
-    // Join: get per kode diizinkan, list ditolak (kode tidak bisa dienumerasi).
     match /invites/{code} {
       allow get: if signedIn();
-      allow list: if false;
+      allow list, update, delete: if false;
       allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['coupleId'])
         && getAfter(/databases/$(database)/documents/couples/$(request.resource.data.coupleId)).data.memberA == request.auth.uid;
-      allow update, delete: if false;
     }
 
     match /couples/{cid} {
-      // get diizinkan untuk calon member selama slot memberB kosong (alur Join).
       allow get: if isMember(cid)
-        || (signedIn() && resource.data.memberB == null);
-      allow list: if false;
+        || (signedIn() && resource.data.get('memberB', null) == null);
+      allow list, delete: if false;
       allow create: if signedIn()
         && request.resource.data.memberA == request.auth.uid
         && request.resource.data.memberB == null;
-      // Satu-satunya update: mengisi memberB dengan uid sendiri.
-      allow update: if signedIn()
-        && resource.data.memberB == null
-        && request.resource.data.memberB == request.auth.uid
-        && request.resource.data.memberA == resource.data.memberA
-        && request.resource.data.inviteCode == resource.data.inviteCode;
-      allow delete: if false;
+
+      allow update: if signedIn() && (
+        // Join: hanya mengisi memberB dengan uid sendiri
+        (resource.data.get('memberB', null) == null
+          && resource.data.memberA != request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberB'])
+          && request.resource.data.memberB == request.auth.uid)
+        ||
+        // Tag balasan: member boleh mengubah reactionTags saja
+        (isMember(cid)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactionTags'])
+          && request.resource.data.reactionTags is list
+          && request.resource.data.reactionTags.size() <= 6)
+      );
 
       match /moments/{uid} {
         allow read: if isMember(cid);
-        allow create, update: if isMember(cid)
-          && request.auth.uid == uid
+        allow write: if isMember(cid) && request.auth.uid == uid
           && request.resource.data.photoBase64 is string
-          && request.resource.data.photoBase64.size() < 700000
+          && request.resource.data.photoBase64.size() < 600000
           && request.resource.data.caption is string
           && request.resource.data.caption.size() <= 500;
         allow delete: if isMember(cid) && request.auth.uid == uid;
       }
 
-      match /importantDates/{dateId} {
-        allow read, write: if isMember(cid);
+      match /importantDates/{id} {
+        allow read, delete: if isMember(cid);
+        allow create, update: if isMember(cid)
+          && request.resource.data.title is string
+          && request.resource.data.title.size() > 0
+          && request.resource.data.title.size() <= 80
+          && request.resource.data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+          && request.resource.data.recurring is bool;
       }
 
-      // P1
       match /reactions/{uid} {
         allow read: if isMember(cid);
-        allow write: if isMember(cid) && request.auth.uid == uid;
+        allow write: if isMember(cid) && request.auth.uid == uid
+          && request.resource.data.tag is string
+          && request.resource.data.tag.size() <= 16;
       }
     }
   }
