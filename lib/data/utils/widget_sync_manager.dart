@@ -20,7 +20,12 @@ class WidgetSyncManager {
         final bytes = base64Decode(partnerMoment.photoBase64);
         final tempDir = await getApplicationSupportDirectory();
         final imageFile = File('${tempDir.path}/partner_moment_widget.jpg');
-        await imageFile.writeAsBytes(bytes);
+        await imageFile.writeAsBytes(bytes, flush: true);
+
+        // Pastikan izin file bisa dibaca oleh proses sistem Android / Launcher
+        try {
+          await Process.run('chmod', ['644', imageFile.path]);
+        } catch (_) {}
 
         await HomeWidget.saveWidgetData<String>(
           'partner_image_path',

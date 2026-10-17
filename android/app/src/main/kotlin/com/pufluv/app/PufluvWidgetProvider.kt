@@ -59,13 +59,39 @@ class PufluvWidgetProvider : AppWidgetProvider() {
             var imageLoaded = false
             if (!imagePath.isNullOrBlank()) {
                 val imageFile = File(imagePath)
-                if (imageFile.exists()) {
-                    val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
-                    if (bitmap != null) {
-                        views.setImageViewBitmap(R.id.widget_image, bitmap)
-                        views.setViewVisibility(R.id.widget_image, View.VISIBLE)
-                        views.setViewVisibility(R.id.widget_placeholder, View.GONE)
-                        imageLoaded = true
+                if (imageFile.exists() && imageFile.canRead()) {
+                    try {
+                        // Decode bounds terlebih dahulu untuk kalkulasi downsampling hemat memori IPC
+                        val options = BitmapFactory.Options().apply {
+                            inJustDecodeBounds = true
+                        }
+                        BitmapFactory.decodeFile(imageFile.absolutePath, options)
+
+                        // Target dimensi widget Android maksimum ~720x720 px untuk mencegah IPC RemoteViews crash
+                        val maxDim = 720
+                        var inSampleSize = 1
+                        val (height: Int, width: Int) = options.outHeight to options.outWidth
+                        if (height > maxDim || width > maxDim) {
+                            val halfHeight: Int = height / 2
+                            val halfWidth: Int = width / 2
+                            while (halfHeight / inSampleSize >= maxDim && halfWidth / inSampleSize >= maxDim) {
+                                inSampleSize *= 2
+                            }
+                        }
+
+                        val decodeOpts = BitmapFactory.Options().apply {
+                            this.inSampleSize = inSampleSize
+                            inPreferredConfig = android.graphics.Bitmap.Config.ARGB_8888
+                        }
+                        val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath, decodeOpts)
+                        if (bitmap != null) {
+                            views.setImageViewBitmap(R.id.widget_image, bitmap)
+                            views.setViewVisibility(R.id.widget_image, View.VISIBLE)
+                            views.setViewVisibility(R.id.widget_placeholder, View.GONE)
+                            imageLoaded = true
+                        }
+                    } catch (e: Throwable) {
+                        e.printStackTrace()
                     }
                 }
             }
