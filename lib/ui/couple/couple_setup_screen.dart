@@ -5,6 +5,8 @@ import 'package:share_plus/share_plus.dart';
 import '../auth/auth_provider.dart';
 import '../auth/login_screen.dart';
 import '../home/home_screen.dart';
+import '../theme/app_theme.dart';
+import '../theme/app_widgets.dart';
 import 'couple_provider.dart';
 import 'join_couple_screen.dart';
 
@@ -19,6 +21,16 @@ class CoupleSetupScreen extends StatelessWidget {
 
 class _CoupleSetupView extends StatelessWidget {
   const _CoupleSetupView();
+
+  Future<void> _logout(BuildContext context, AuthProvider authProvider) async {
+    await authProvider.logout();
+    if (context.mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        (route) => false,
+      );
+    }
+  }
 
   Future<void> _handleCreateCouple(BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -41,79 +53,81 @@ class _CoupleSetupView extends StatelessWidget {
         context: context,
         barrierDismissible: false,
         builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Row(
-            children: [
-              Icon(Icons.favorite, color: Colors.pinkAccent),
-              SizedBox(width: 8),
-              Text('Ruang Berhasil Dibuat!'),
-            ],
+          title: Text(
+            'Ruang berhasil dibuat',
+            style: AppText.display(26),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Text(
-                'Bagikan kode 6 digit ini ke pasanganmu agar bisa bergabung:',
-                textAlign: TextAlign.center,
+                'Bagikan kode ini ke pasanganmu agar bisa bergabung.',
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
                 decoration: BoxDecoration(
-                  color: Colors.pink.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.pinkAccent.shade100, width: 2),
+                  color: AppColors.bg,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: AppColors.accent.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: SelectableText(
                   inviteCode,
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 4,
-                    color: Colors.pink,
+                  textAlign: TextAlign.center,
+                  style: AppText.body(
+                    32,
+                    weight: FontWeight.bold,
+                    letterSpacing: 6,
+                    color: AppColors.accent,
                   ),
                 ),
               ),
               const SizedBox(height: 16),
               Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  OutlinedButton.icon(
-                    icon: const Icon(Icons.copy, size: 18),
-                    label: const Text('Salin'),
-                    onPressed: () {
-                      Clipboard.setData(ClipboardData(text: inviteCode));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Kode berhasil disalin!'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    },
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.copy, size: 16),
+                      label: const Text('Salin'),
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: inviteCode));
+                        AppSnack.show(
+                          context,
+                          'Kode berhasil disalin!',
+                          type: AppSnackType.success,
+                        );
+                      },
+                    ),
                   ),
-                  const SizedBox(width: 12),
-                  FilledButton.icon(
-                    icon: const Icon(Icons.share, size: 18),
-                    label: const Text('Bagikan'),
-                    onPressed: () {
-                      SharePlus.instance.share(
-                        ShareParams(
-                          text: 'Yuk gabung di ruang privat kita di PUFLUV! Masukkan kode undangan: $inviteCode',
-                          subject: 'Undangan PUFLUV Space',
-                        ),
-                      );
-                    },
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: FilledButton.icon(
+                      icon: const Icon(Icons.share, size: 16),
+                      label: const Text('Bagikan'),
+                      onPressed: () {
+                        SharePlus.instance.share(
+                          ShareParams(
+                            text: 'Yuk gabung di ruang privat kita di PUFLUV! Masukkan kode undangan: $inviteCode',
+                            subject: 'Undangan PUFLUV Space',
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
             ],
           ),
+          actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(ctx).pop();
               },
-              child: const Text('Lanjut ke Beranda'),
+              child: const Text('Lanjut ke beranda'),
             ),
           ],
         ),
@@ -125,11 +139,10 @@ class _CoupleSetupView extends StatelessWidget {
         (route) => false,
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(coupleProvider.errorMessage ?? 'Gagal membuat couple space'),
-          backgroundColor: Colors.redAccent,
-        ),
+      AppSnack.show(
+        context,
+        coupleProvider.errorMessage ?? 'Gagal membuat couple space',
+        type: AppSnackType.error,
       );
     }
   }
@@ -141,112 +154,156 @@ class _CoupleSetupView extends StatelessWidget {
     final user = authProvider.user;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Hubungkan Pasangan'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Logout',
-            onPressed: () async {
-              await authProvider.logout();
-              if (context.mounted) {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  (route) => false,
-                );
-              }
-            },
-          ),
-        ],
-      ),
+      backgroundColor: AppColors.bg,
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Icon(
-                  Icons.favorite_rounded,
-                  color: Colors.pinkAccent,
-                  size: 64,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Top bar: wordmark + logout (sama seperti Home)
+              SizedBox(
+                height: 44,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(left: 4),
+                      child: AppBrand(),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.logout, color: AppColors.text, size: 20),
+                      tooltip: 'Logout',
+                      onPressed: () => _logout(context, authProvider),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  'Halo, ${user?.name ?? 'User'}!',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
+              ),
+              const SizedBox(height: 36),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: AppScreenHeading(
+                  title: 'Halo, ${user?.name ?? 'User'}',
+                  subtitle: 'Pilih salah satu cara untuk memulai ruang privat bersama pasanganmu.',
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Pilih salah satu cara untuk memulai ruang privat bersama pasanganmu:',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey),
-                ),
-                const SizedBox(height: 36),
-                FilledButton.icon(
-                  onPressed: coupleProvider.isLoading
-                      ? null
-                      : () => _handleCreateCouple(context),
-                  icon: const Icon(Icons.add_circle_outline),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  label: coupleProvider.isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
+              ),
+              const SizedBox(height: 32),
+              _OptionCard(
+                tag: 'BARU',
+                title: 'Buat ruang baru',
+                description: 'Dapatkan kode undangan untuk dibagikan ke pasanganmu.',
+                loading: coupleProvider.isLoading,
+                highlighted: true,
+                onTap: coupleProvider.isLoading
+                    ? null
+                    : () => _handleCreateCouple(context),
+              ),
+              const SizedBox(height: 14),
+              _OptionCard(
+                tag: 'PUNYA KODE?',
+                title: 'Gabung dengan kode undangan',
+                description: 'Masukkan kode dari pasanganmu yang sudah membuat ruang.',
+                onTap: coupleProvider.isLoading
+                    ? null
+                    : () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const JoinCoupleScreen(),
                           ),
-                        )
-                      : const Text(
-                          'Buat Ruang Baru (Dapatkan Kode)',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                ),
-                const SizedBox(height: 16),
-                OutlinedButton.icon(
+                        );
+                      },
+              ),
+              const SizedBox(height: 20),
+              Center(
+                child: TextButton(
                   onPressed: coupleProvider.isLoading
                       ? null
-                      : () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const JoinCoupleScreen(),
-                            ),
-                          );
-                        },
-                  icon: const Icon(Icons.group_add_outlined),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  label: const Text(
-                    'Gabung dengan Kode Undangan',
-                    style: TextStyle(fontSize: 16),
+                      : () => _logout(context, authProvider),
+                  child: Text(
+                    'Keluar',
+                    style: AppText.body(14, color: AppColors.muted),
                   ),
                 ),
-                const SizedBox(height: 24),
-                TextButton(
-                  onPressed: coupleProvider.isLoading
-                      ? null
-                      : () async {
-                          await authProvider.logout();
-                          if (context.mounted) {
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(builder: (_) => const LoginScreen()),
-                              (route) => false,
-                            );
-                          }
-                        },
-                  child: const Text('Keluar (Logout)'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Kartu pilihan: gaya sama dengan kartu countdown di Home.
+class _OptionCard extends StatelessWidget {
+  final String tag;
+  final String title;
+  final String description;
+  final bool loading;
+  final bool highlighted;
+  final VoidCallback? onTap;
+
+  const _OptionCard({
+    required this.tag,
+    required this.title,
+    required this.description,
+    this.loading = false,
+    this.highlighted = false,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.surface,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(
+          color: highlighted
+              ? AppColors.accent.withValues(alpha: 0.35)
+              : AppColors.cardBorder,
+        ),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(tag, style: AppText.label()),
+                    const SizedBox(height: 8),
+                    Text(
+                      title,
+                      style: AppText.body(18, weight: FontWeight.w500, height: 1.25),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      description,
+                      style: AppText.body(13, color: AppColors.muted, height: 1.45),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 16),
+              loading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.accent,
+                      ),
+                    )
+                  : const Icon(
+                      Icons.arrow_forward_rounded,
+                      color: AppColors.accent,
+                      size: 22,
+                    ),
+            ],
           ),
         ),
       ),

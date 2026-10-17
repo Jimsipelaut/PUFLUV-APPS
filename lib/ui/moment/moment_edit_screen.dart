@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../../data/model/moment_model.dart';
 import '../../data/repository/moment_repository.dart';
 import '../auth/auth_provider.dart';
+import '../theme/app_theme.dart';
+import '../theme/app_widgets.dart';
 import 'moment_provider.dart';
 
 class MomentEditScreen extends StatefulWidget {
@@ -74,26 +76,42 @@ class _MomentEditScreenState extends State<MomentEditScreen> {
   void _showImageSourceDialog(BuildContext context, MomentProvider provider) {
     showModalBottomSheet(
       context: context,
-      builder: (_) => SafeArea(
-        child: Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Ambil dari Kamera'),
-              onTap: () {
-                Navigator.of(context).pop();
-                provider.pickImage(ImageSource.camera);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Pilih dari Galeri'),
-              onTap: () {
-                Navigator.of(context).pop();
-                provider.pickImage(ImageSource.gallery);
-              },
-            ),
-          ],
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 28, 20, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Foto moment', style: AppText.body(18, weight: FontWeight.w500)),
+              const SizedBox(height: 4),
+              Text(
+                'Foto lama akan otomatis tertimpa.',
+                style: AppText.body(13, color: AppColors.muted),
+              ),
+              const SizedBox(height: 16),
+              _SourceTile(
+                icon: Icons.camera_alt_outlined,
+                label: 'Ambil dari kamera',
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  provider.pickImage(ImageSource.camera);
+                },
+              ),
+              _SourceTile(
+                icon: Icons.photo_library_outlined,
+                label: 'Pilih dari galeri',
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  provider.pickImage(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -106,8 +124,10 @@ class _MomentEditScreenState extends State<MomentEditScreen> {
     if (user == null || user.coupleId == null) return;
 
     if (provider.selectedImageBase64 == null && _existingMoment == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Silakan pilih foto terlebih dahulu')),
+      AppSnack.show(
+        context,
+        'Silakan pilih foto terlebih dahulu',
+        type: AppSnackType.error,
       );
       return;
     }
@@ -124,18 +144,16 @@ class _MomentEditScreenState extends State<MomentEditScreen> {
 
     if (success) {
       Navigator.of(context).pop(true);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Moment berhasil diperbarui!'),
-          backgroundColor: Colors.green,
-        ),
+      AppSnack.show(
+        context,
+        'Moment berhasil diperbarui!',
+        type: AppSnackType.success,
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(provider.errorMessage ?? 'Gagal menyimpan moment'),
-          backgroundColor: Colors.redAccent,
-        ),
+      AppSnack.show(
+        context,
+        provider.errorMessage ?? 'Gagal menyimpan moment',
+        type: AppSnackType.error,
       );
     }
   }
@@ -147,105 +165,67 @@ class _MomentEditScreenState extends State<MomentEditScreen> {
       child: Consumer<MomentProvider>(
         builder: (context, provider, _) {
           return Scaffold(
+            backgroundColor: AppColors.bg,
             appBar: AppBar(
-              title: const Text('Perbarui Moment Saya'),
-              actions: [
-                if (provider.isLoading)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.0),
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ),
-                  )
-                else
-                  IconButton(
-                    icon: const Icon(Icons.check),
-                    onPressed: () => _handleSave(provider),
-                  ),
-              ],
+              title: const Text('Perbarui moment'),
             ),
             body: _isLoadingExisting
                 ? const Center(child: CircularProgressIndicator())
-                : SingleChildScrollView(
-                    padding: const EdgeInsets.all(24.0),
+                : SafeArea(
+                    top: false,
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        GestureDetector(
-                          onTap: () => _showImageSourceDialog(context, provider),
-                          child: Container(
-                            height: 280,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[200],
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.grey[300]!),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: _buildImageWidget(provider),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Center(
-                          child: TextButton.icon(
-                            onPressed: () => _showImageSourceDialog(context, provider),
-                            icon: const Icon(Icons.camera_alt_outlined),
-                            label: const Text('Ganti Foto (Kamera / Galeri)'),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        const Text(
-                          'Bagaimana perasaanmu saat ini? (Opsional)',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                        ),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          height: 52,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: _moodOptions.length,
-                            separatorBuilder: (_, __) => const SizedBox(width: 8),
-                            itemBuilder: (context, index) {
-                              final item = _moodOptions[index];
-                              final emoji = item['emoji']!;
-                              final isSelected = _selectedMood == emoji;
-
-                              return ChoiceChip(
-                                label: Text(
-                                  '$emoji ${item['label']}',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: isSelected ? Colors.pink : Colors.black87,
-                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                  ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _buildPhotoArea(context, provider),
+                                const SizedBox(height: 24),
+                                Text(
+                                  'Bagaimana perasaanmu saat ini? (opsional)',
+                                  style: AppText.fieldLabel(),
                                 ),
-                                selected: isSelected,
-                                selectedColor: Colors.pink.shade50,
-                                side: BorderSide(
-                                  color: isSelected ? Colors.pinkAccent : Colors.grey.shade300,
+                                const SizedBox(height: 10),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: _moodOptions.map((item) {
+                                    final emoji = item['emoji']!;
+                                    return _MoodPill(
+                                      emoji: emoji,
+                                      label: item['label']!,
+                                      selected: _selectedMood == emoji,
+                                      onTap: () {
+                                        setState(() {
+                                          _selectedMood =
+                                              _selectedMood == emoji ? null : emoji;
+                                        });
+                                      },
+                                    );
+                                  }).toList(),
                                 ),
-                                onSelected: (selected) {
-                                  setState(() {
-                                    _selectedMood = selected ? emoji : null;
-                                  });
-                                },
-                              );
-                            },
+                                const SizedBox(height: 24),
+                                AppTextField(
+                                  controller: _captionController,
+                                  label: 'Caption',
+                                  hint: 'Tuliskan perasaan atau momen hari ini...',
+                                  maxLines: 3,
+                                  textCapitalization: TextCapitalization.sentences,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        TextField(
-                          controller: _captionController,
-                          maxLines: 3,
-                          decoration: const InputDecoration(
-                            labelText: 'Caption Moment',
-                            hintText: 'Tuliskan perasaan atau momen hari ini...',
-                            border: OutlineInputBorder(),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                          child: AppPrimaryButton(
+                            label: 'Simpan moment',
+                            loading: provider.isLoading,
+                            onPressed: provider.isCompressing
+                                ? null
+                                : () => _handleSave(provider),
                           ),
                         ),
                       ],
@@ -257,17 +237,98 @@ class _MomentEditScreenState extends State<MomentEditScreen> {
     );
   }
 
+  /// Area foto: kartu 28px berlatar gradien abu-biru, sama dengan hero Home.
+  Widget _buildPhotoArea(BuildContext context, MomentProvider provider) {
+    final hasPhoto = provider.selectedImageFile != null ||
+        (_existingMoment != null && _existingMoment!.photoBase64.isNotEmpty);
+
+    return GestureDetector(
+      onTap: () => _showImageSourceDialog(context, provider),
+      child: Container(
+        height: 340,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(28),
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            stops: [0.0, 0.55, 1.0],
+            colors: [
+              Color(0xFF5A626E),
+              Color(0xFF3B414B),
+              Color(0xFF252931),
+            ],
+          ),
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _buildImageWidget(provider),
+            if (hasPhoto && !provider.isCompressing)
+              const IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      stops: [0.0, 0.6, 1.0],
+                      colors: [
+                        Color(0x00000000),
+                        Color(0x00000000),
+                        Color(0x99000000),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            if (!provider.isCompressing)
+              Positioned(
+                right: 16,
+                bottom: 16,
+                child: Container(
+                  height: 40,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.bg.withValues(alpha: 0.75),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppColors.accent.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.camera_alt_outlined,
+                        color: AppColors.accent,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        hasPhoto ? 'Ganti foto' : 'Tambah foto',
+                        style: AppText.body(13, weight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildImageWidget(MomentProvider provider) {
     if (provider.isCompressing) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            CircularProgressIndicator(strokeWidth: 2),
-            SizedBox(height: 12),
+          children: [
+            const CircularProgressIndicator(strokeWidth: 2),
+            const SizedBox(height: 14),
             Text(
               'Mengompresi & menyiapkan foto...',
-              style: TextStyle(color: Colors.grey, fontSize: 13),
+              style: AppText.body(13, color: AppColors.textSoft),
             ),
           ],
         ),
@@ -287,19 +348,120 @@ class _MomentEditScreenState extends State<MomentEditScreen> {
         return Image.memory(
           bytes,
           fit: BoxFit.cover,
+          gaplessPlayback: true,
         );
       } catch (_) {
-        return const Center(child: Text('Gagal memuat foto'));
+        return Center(
+          child: Text(
+            'Gagal memuat foto',
+            style: AppText.body(13, color: AppColors.textSoft),
+          ),
+        );
       }
     }
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: const [
-        Icon(Icons.add_a_photo_outlined, size: 48, color: Colors.grey),
-        SizedBox(height: 8),
-        Text('Ketuk untuk menambah foto moment', style: TextStyle(color: Colors.grey)),
-      ],
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.add_a_photo_outlined, size: 40, color: AppColors.textSoft),
+          const SizedBox(height: 12),
+          Text(
+            'Ketuk untuk menambah foto moment',
+            style: AppText.body(14, color: AppColors.textSoft),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Pill mood: sama dengan gaya tag balasan di Home (44px, radius 22).
+class _MoodPill extends StatelessWidget {
+  final String emoji;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _MoodPill({
+    required this.emoji,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(22),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 44),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22),
+          color: selected
+              ? AppColors.accent.withValues(alpha: 0.15)
+              : Colors.transparent,
+          border: Border.all(
+            color: selected ? AppColors.accent : AppColors.outline,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 16)),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: AppText.body(
+                14,
+                weight: selected ? FontWeight.w600 : FontWeight.w400,
+                color: selected ? AppColors.accent : AppColors.text,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SourceTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _SourceTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.bg,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.outline),
+              ),
+              child: Icon(icon, color: AppColors.accent, size: 20),
+            ),
+            const SizedBox(width: 14),
+            Text(label, style: AppText.body(15)),
+          ],
+        ),
+      ),
     );
   }
 }

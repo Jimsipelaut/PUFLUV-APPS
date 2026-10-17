@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../data/model/important_date_model.dart';
 import '../auth/auth_provider.dart';
+import '../theme/app_theme.dart';
+import '../theme/app_widgets.dart';
 import 'date_provider.dart';
 
 class DateFormScreen extends StatefulWidget {
@@ -55,9 +57,7 @@ class _DateFormScreenState extends State<DateFormScreen> {
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pilih tanggal terlebih dahulu')),
-      );
+      AppSnack.show(context, 'Pilih tanggal terlebih dahulu', type: AppSnackType.error);
       return;
     }
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -88,18 +88,16 @@ class _DateFormScreenState extends State<DateFormScreen> {
     if (!mounted) return;
     if (success) {
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_isEdit ? 'Tanggal diperbarui' : 'Tanggal ditambahkan'),
-          backgroundColor: Colors.green,
-        ),
+      AppSnack.show(
+        context,
+        _isEdit ? 'Tanggal diperbarui' : 'Tanggal ditambahkan',
+        type: AppSnackType.success,
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(provider.errorMessage ?? 'Gagal menyimpan'),
-          backgroundColor: Colors.redAccent,
-        ),
+      AppSnack.show(
+        context,
+        provider.errorMessage ?? 'Gagal menyimpan',
+        type: AppSnackType.error,
       );
     }
   }
@@ -119,62 +117,115 @@ class _DateFormScreenState extends State<DateFormScreen> {
       child: Consumer<DateProvider>(
         builder: (context, provider, _) {
           return Scaffold(
+            backgroundColor: AppColors.bg,
             appBar: AppBar(
-              title: Text(_isEdit ? 'Edit Tanggal' : 'Tambah Tanggal'),
+              title: Text(_isEdit ? 'Edit tanggal' : 'Tambah tanggal'),
             ),
-            body: Form(
-              key: _formKey,
-              child: ListView(
-                padding: const EdgeInsets.all(24),
-                children: [
-                  TextFormField(
-                    controller: _titleController,
-                    decoration: const InputDecoration(
-                      labelText: 'Judul (mis. Anniversary)',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.label_outline),
-                    ),
-                    validator: (v) {
-                      if (v == null || v.trim().isEmpty) return 'Judul wajib diisi';
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  InkWell(
-                    onTap: _pickDate,
-                    borderRadius: BorderRadius.circular(8),
-                    child: InputDecorator(
-                      decoration: const InputDecoration(
-                        labelText: 'Tanggal',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.calendar_today_outlined),
+            body: SafeArea(
+              top: false,
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: ListView(
+                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                        children: [
+                          AppTextField(
+                            controller: _titleController,
+                            label: 'Judul',
+                            hint: 'mis. Anniversary',
+                            textCapitalization: TextCapitalization.sentences,
+                            validator: (v) {
+                              if (v == null || v.trim().isEmpty) return 'Judul wajib diisi';
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 18),
+                          AppFieldShell(
+                            label: 'Tanggal',
+                            child: InkWell(
+                              onTap: _pickDate,
+                              borderRadius: BorderRadius.circular(14),
+                              child: Container(
+                                constraints: const BoxConstraints(minHeight: 52),
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(color: AppColors.outline),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        _selectedDate == null
+                                            ? 'Pilih tanggal'
+                                            : _formatDate(_selectedDate!),
+                                        style: AppText.body(
+                                          15,
+                                          color: _selectedDate == null
+                                              ? AppColors.hint
+                                              : AppColors.text,
+                                        ),
+                                      ),
+                                    ),
+                                    const Icon(
+                                      Icons.calendar_today_outlined,
+                                      color: AppColors.muted,
+                                      size: 18,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          AppCard(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                            child: GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () => setState(() => _recurring = !_recurring),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Berulang setiap tahun',
+                                          style: AppText.body(14, weight: FontWeight.w500),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'Aktifkan untuk anniversary / ulang tahun',
+                                          style: AppText.body(12, color: AppColors.muted),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Switch(
+                                    value: _recurring,
+                                    onChanged: (v) => setState(() => _recurring = v),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      child: Text(
-                        _selectedDate == null
-                            ? 'Pilih tanggal'
-                            : _formatDate(_selectedDate!),
-                        style: TextStyle(
-                          color: _selectedDate == null ? Colors.grey : Colors.black87,
-                        ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                      child: AppPrimaryButton(
+                        label: _isEdit ? 'Simpan perubahan' : 'Tambah tanggal',
+                        loading: provider.isLoading,
+                        onPressed: _handleSave,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  SwitchListTile(
-                    title: const Text('Berulang setiap tahun'),
-                    subtitle: const Text('Aktifkan untuk anniversary / ulang tahun'),
-                    value: _recurring,
-                    onChanged: (v) => setState(() => _recurring = v),
-                  ),
-                  const SizedBox(height: 24),
-                  FilledButton(
-                    onPressed: provider.isLoading ? null : _handleSave,
-                    style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
-                    child: provider.isLoading
-                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : Text(_isEdit ? 'Simpan Perubahan' : 'Tambah Tanggal', style: const TextStyle(fontSize: 16)),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );

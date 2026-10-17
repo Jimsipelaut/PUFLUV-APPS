@@ -4,6 +4,8 @@ import 'auth_provider.dart';
 import 'register_screen.dart';
 import '../couple/couple_setup_screen.dart';
 import '../home/home_screen.dart';
+import '../theme/app_theme.dart';
+import '../theme/app_widgets.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -49,12 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } else {
       final error = authProvider.errorMessage ?? 'Login gagal';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
+      AppSnack.show(context, error, type: AppSnackType.error);
     }
   }
 
@@ -63,39 +60,37 @@ class _LoginScreenState extends State<LoginScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Reset Password'),
+        title: const Text('Reset password'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Masukkan email yang terdaftar. Tautan untuk reset password akan dikirimkan ke email kamu.',
-              style: TextStyle(fontSize: 13, color: Colors.black87),
             ),
-            const SizedBox(height: 16),
-            TextField(
+            const SizedBox(height: 20),
+            AppTextField(
               controller: resetEmailController,
+              label: 'Email',
+              hint: 'nama@email.com',
               keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                prefixIcon: Icon(Icons.email_outlined),
-                border: OutlineInputBorder(),
-              ),
             ),
           ],
         ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Batal'),
+            child: Text('Batal', style: AppText.body(14, color: AppColors.muted)),
           ),
           FilledButton(
             onPressed: () async {
               final email = resetEmailController.text.trim();
               if (email.isEmpty || !email.contains('@')) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Masukkan alamat email yang valid')),
+                AppSnack.show(
+                  context,
+                  'Masukkan alamat email yang valid',
+                  type: AppSnackType.error,
                 );
                 return;
               }
@@ -103,18 +98,16 @@ class _LoginScreenState extends State<LoginScreen> {
               final ok = await auth.sendPasswordReset(email);
               if (context.mounted) {
                 if (ok) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Email reset password telah dikirim! Periksa inbox atau spam.'),
-                      backgroundColor: Colors.green,
-                    ),
+                  AppSnack.show(
+                    context,
+                    'Email reset password telah dikirim! Periksa inbox atau spam.',
+                    type: AppSnackType.success,
                   );
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(auth.errorMessage ?? 'Gagal mengirim email reset'),
-                      backgroundColor: Colors.redAccent,
-                    ),
+                  AppSnack.show(
+                    context,
+                    auth.errorMessage ?? 'Gagal mengirim email reset',
+                    type: AppSnackType.error,
                   );
                 }
               }
@@ -131,48 +124,29 @@ class _LoginScreenState extends State<LoginScreen> {
     final auth = Provider.of<AuthProvider>(context);
 
     return Scaffold(
+      backgroundColor: AppColors.bg,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
             child: Form(
               key: _formKey,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(
-                    Icons.favorite_rounded,
-                    color: Colors.pinkAccent,
-                    size: 56,
+                  const AppBrand(),
+                  const SizedBox(height: 44),
+                  const AppScreenHeading(
+                    title: 'Masuk',
+                    subtitle: 'Ruang privat untuk kamu dan pasangan.',
                   ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Masuk ke PUFLUV',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Ruang privat untuk kamu dan pasangan',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  TextFormField(
+                  const SizedBox(height: 36),
+                  AppTextField(
                     controller: _emailController,
+                    label: 'Email',
+                    hint: 'nama@email.com',
                     keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.email_outlined),
-                      border: OutlineInputBorder(),
-                    ),
                     validator: (val) {
                       if (val == null || val.trim().isEmpty) {
                         return 'Email wajib diisi';
@@ -183,26 +157,26 @@ class _LoginScreenState extends State<LoginScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
-                  TextFormField(
+                  const SizedBox(height: 18),
+                  AppTextField(
                     controller: _passwordController,
+                    label: 'Password',
+                    hint: 'Minimal 6 karakter',
                     obscureText: _obscurePassword,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      border: const OutlineInputBorder(),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
+                    suffixIcon: IconButton(
+                      tooltip: _obscurePassword ? 'Tampilkan password' : 'Sembunyikan password',
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                        color: AppColors.muted,
+                        size: 20,
                       ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
                     ),
                     validator: (val) {
                       if (val == null || val.isEmpty) {
@@ -214,39 +188,29 @@ class _LoginScreenState extends State<LoginScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 8),
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: auth.isLoading ? null : () => _showForgotPasswordDialog(context, auth),
-                      child: const Text('Lupa Password?'),
+                      onPressed: auth.isLoading
+                          ? null
+                          : () => _showForgotPasswordDialog(context, auth),
+                      child: const Text('Lupa password?'),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  FilledButton(
-                    onPressed: auth.isLoading ? null : _handleLogin,
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    child: auth.isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Text(
-                            'Masuk',
-                            style: TextStyle(fontSize: 16),
-                          ),
+                  const SizedBox(height: 12),
+                  AppPrimaryButton(
+                    label: 'Masuk',
+                    loading: auth.isLoading,
+                    onPressed: _handleLogin,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('Belum punya akun?'),
+                      Text(
+                        'Belum punya akun?',
+                        style: AppText.body(14, color: AppColors.muted),
+                      ),
                       TextButton(
                         onPressed: auth.isLoading
                             ? null
@@ -257,7 +221,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 );
                               },
-                        child: const Text('Daftar di sini'),
+                        child: const Text('Daftar'),
                       ),
                     ],
                   ),

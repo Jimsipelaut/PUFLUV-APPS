@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'data/repository/auth_repository.dart';
@@ -13,9 +14,11 @@ import 'ui/dates/date_provider.dart';
 import 'ui/home/home_provider.dart';
 import 'ui/moment/moment_provider.dart';
 import 'ui/splash/splash_screen.dart';
+import 'ui/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setSystemUIOverlayStyle(AppTheme.overlay);
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
@@ -79,14 +82,9 @@ class PufLuvApp extends StatelessWidget {
       child: MaterialApp(
         title: 'PUFLUV',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          useMaterial3: true,
-          scaffoldBackgroundColor: Colors.white,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.pinkAccent,
-            brightness: Brightness.light,
-          ),
-        ),
+        theme: AppTheme.dark(),
+        darkTheme: AppTheme.dark(),
+        themeMode: ThemeMode.dark,
         home: const SplashScreen(),
       ),
     );

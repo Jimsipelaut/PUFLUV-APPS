@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'auth_provider.dart';
 import '../couple/couple_setup_screen.dart';
+import '../theme/app_theme.dart';
+import '../theme/app_widgets.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -47,12 +49,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
     } else {
       final error = authProvider.errorMessage ?? 'Registrasi gagal';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
+      AppSnack.show(context, error, type: AppSnackType.error);
     }
   }
 
@@ -61,43 +58,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final auth = Provider.of<AuthProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Buat Akun Baru'),
-      ),
+      backgroundColor: AppColors.bg,
+      appBar: AppBar(),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(
-                    'Daftar PUFLUV',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Mulai ruang privat bersama pasanganmu',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
-                    ),
+                  const AppScreenHeading(
+                    title: 'Buat akun',
+                    subtitle: 'Mulai ruang privat bersama pasanganmu.',
                   ),
                   const SizedBox(height: 32),
-                  TextFormField(
+                  AppTextField(
                     controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Nama Lengkap',
-                      prefixIcon: Icon(Icons.person_outline),
-                      border: OutlineInputBorder(),
-                    ),
+                    label: 'Nama lengkap',
+                    hint: 'Nama kamu',
+                    textCapitalization: TextCapitalization.words,
                     validator: (val) {
                       if (val == null || val.trim().isEmpty) {
                         return 'Nama wajib diisi';
@@ -105,15 +86,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
-                  TextFormField(
+                  const SizedBox(height: 18),
+                  AppTextField(
                     controller: _emailController,
+                    label: 'Email',
+                    hint: 'nama@email.com',
                     keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.email_outlined),
-                      border: OutlineInputBorder(),
-                    ),
                     validator: (val) {
                       if (val == null || val.trim().isEmpty) {
                         return 'Email wajib diisi';
@@ -124,26 +102,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
-                  TextFormField(
+                  const SizedBox(height: 18),
+                  AppTextField(
                     controller: _passwordController,
+                    label: 'Password',
+                    hint: 'Minimal 6 karakter',
                     obscureText: _obscurePassword,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      border: const OutlineInputBorder(),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
+                    suffixIcon: IconButton(
+                      tooltip: _obscurePassword ? 'Tampilkan password' : 'Sembunyikan password',
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                        color: AppColors.muted,
+                        size: 20,
                       ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
                     ),
                     validator: (val) {
                       if (val == null || val.isEmpty) {
@@ -155,15 +133,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
-                  TextFormField(
+                  const SizedBox(height: 18),
+                  AppTextField(
                     controller: _confirmPasswordController,
+                    label: 'Konfirmasi password',
+                    hint: 'Ulangi password',
                     obscureText: _obscurePassword,
-                    decoration: const InputDecoration(
-                      labelText: 'Konfirmasi Password',
-                      prefixIcon: Icon(Icons.lock_outline),
-                      border: OutlineInputBorder(),
-                    ),
                     validator: (val) {
                       if (val == null || val.isEmpty) {
                         return 'Konfirmasi password wajib diisi';
@@ -174,25 +149,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 24),
-                  FilledButton(
-                    onPressed: auth.isLoading ? null : _handleRegister,
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    child: auth.isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Text(
-                            'Daftar Sekarang',
-                            style: TextStyle(fontSize: 16),
-                          ),
+                  const SizedBox(height: 28),
+                  AppPrimaryButton(
+                    label: 'Daftar sekarang',
+                    loading: auth.isLoading,
+                    onPressed: _handleRegister,
                   ),
                 ],
               ),

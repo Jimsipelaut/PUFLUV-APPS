@@ -75,7 +75,8 @@ PUFLUV-APPS/
 │       ├── dates/             # DateListScreen, DateFormScreen, DateProvider
 │       ├── home/              # HomeScreen, HomeProvider, ReactionTagBottomSheet
 │       ├── moment/            # MomentEditScreen, MomentProvider
-│       └── splash/            # SplashScreen, SplashProvider
+│       ├── splash/            # SplashScreen, SplashProvider
+│       └── theme/             # AppColors, AppText, AppTheme + komponen UI bersama (app_widgets.dart)
 ├── test/                      # 15 Unit Tests (Model & Date Calculation)
 ├── docs/                      # Dokumentasi teknis, use-case, ERD, dan keputusan arsitektur
 ├── PROGRESS.md                # Laporan tahapan pengerjaan fase demi fase

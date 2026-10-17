@@ -4,6 +4,8 @@ import '../auth/auth_provider.dart';
 import '../auth/login_screen.dart';
 import '../couple/couple_setup_screen.dart';
 import '../home/home_screen.dart';
+import '../theme/app_theme.dart';
+import '../theme/app_widgets.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -69,80 +71,102 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_hasError) {
-      return Scaffold(
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.wifi_off_rounded,
-                  color: Colors.pinkAccent,
-                  size: 64,
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Gagal memuat profil',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+    if (_hasError) return _buildErrorState(context);
+
+    return Scaffold(
+      backgroundColor: AppColors.bg,
+      body: Center(
+        child: TweenAnimationBuilder<double>(
+          tween: Tween<double>(begin: 0, end: 1),
+          duration: const Duration(milliseconds: 700),
+          curve: Curves.easeOut,
+          builder: (context, value, child) =>
+              Opacity(opacity: value, child: child),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Padding kiri = letterSpacing, supaya wordmark benar-benar di tengah.
+              Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Text(
+                  'PUFLUV',
+                  style: AppText.body(
+                    14,
+                    weight: FontWeight.w500,
+                    letterSpacing: 8,
+                    color: AppColors.accent,
                   ),
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Koneksi internet lambat atau terputus saat memeriksa sesi login.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Ruang privat berdua',
+                style: AppText.body(13, color: AppColors.muted),
+              ),
+              const SizedBox(height: 36),
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 1.6,
+                  color: AppColors.accent,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.bg,
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Align(
+                  alignment: Alignment.center,
+                  child: AppIconBadge(icon: Icons.wifi_off_rounded),
                 ),
                 const SizedBox(height: 24),
-                ElevatedButton.icon(
-                  onPressed: _checkSession,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Coba Lagi'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pinkAccent,
-                    foregroundColor: Colors.white,
-                  ),
+                Text(
+                  'Gagal memuat profil',
+                  textAlign: TextAlign.center,
+                  style: AppText.body(18, weight: FontWeight.w500),
                 ),
+                const SizedBox(height: 8),
+                Text(
+                  'Koneksi internet lambat atau terputus saat memeriksa sesi login.',
+                  textAlign: TextAlign.center,
+                  style: AppText.body(14, color: AppColors.muted, height: 1.45),
+                ),
+                const SizedBox(height: 28),
+                AppPrimaryButton(
+                  label: 'Coba lagi',
+                  icon: Icons.refresh_rounded,
+                  onPressed: _checkSession,
+                ),
+                const SizedBox(height: 8),
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pushReplacement(
                       MaterialPageRoute(builder: (_) => const LoginScreen()),
                     );
                   },
-                  child: const Text('Ke Halaman Login'),
+                  child: Text(
+                    'Ke halaman login',
+                    style: AppText.body(14, color: AppColors.muted),
+                  ),
                 ),
               ],
             ),
           ),
-        ),
-      );
-    }
-
-    return const Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.favorite_rounded,
-              color: Colors.pinkAccent,
-              size: 64,
-            ),
-            SizedBox(height: 16),
-            Text(
-              'PUFLUV',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 2,
-              ),
-            ),
-            SizedBox(height: 24),
-            CircularProgressIndicator(strokeWidth: 2),
-          ],
         ),
       ),
     );
