@@ -6,7 +6,17 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.LinearGradient
+import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
+import android.graphics.Rect
+import android.graphics.RectF
+import android.graphics.Shader
 import android.view.View
 import android.widget.RemoteViews
 import es.antonborri.home_widget.HomeWidgetPlugin
@@ -72,9 +82,9 @@ class PufluvWidgetProvider : AppWidgetProvider() {
                         }
                         BitmapFactory.decodeFile(imageFile.absolutePath, options)
 
-                        // Target dimensi widget Android maksimum ~480x480 px dengan RGB_565
-                        // Ukuran memori maksimal: 480 * 480 * 2 = ~460 KB (jauh di bawah batas Binder IPC 1MB)
-                        val maxDim = 480
+                        // Target dimensi widget Android maksimum ~400x400 px
+                        // Menjaga ukuran Binder IPC jauh di bawah batas 1MB
+                        val maxDim = 400
                         var inSampleSize = 1
                         val (height: Int, width: Int) = options.outHeight to options.outWidth
                         if (height > maxDim || width > maxDim) {
@@ -87,14 +97,19 @@ class PufluvWidgetProvider : AppWidgetProvider() {
 
                         val decodeOpts = BitmapFactory.Options().apply {
                             this.inSampleSize = inSampleSize
-                            inPreferredConfig = android.graphics.Bitmap.Config.RGB_565
+                            inPreferredConfig = Bitmap.Config.ARGB_8888
                         }
-                        val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath, decodeOpts)
-                        if (bitmap != null) {
-                            views.setImageViewBitmap(R.id.widget_image, bitmap)
+                        val rawBitmap = BitmapFactory.decodeFile(imageFile.absolutePath, decodeOpts)
+                        if (rawBitmap != null) {
+                            // Hitung corner radius proporsional (28dp relatif terhadap dimensi widget)
+                            val cornerRadiusPx = rawBitmap.width * (28f / 300f)
+                            val roundedBitmap = createRoundedWidgetBitmap(rawBitmap, cornerRadiusPx)
+                            rawBitmap.recycle()
+
+                            views.setImageViewBitmap(R.id.widget_image, roundedBitmap)
                             views.setViewVisibility(R.id.widget_image, View.VISIBLE)
                             views.setViewVisibility(R.id.widget_placeholder, View.GONE)
-                            views.setViewVisibility(R.id.widget_scrim_overlay, View.VISIBLE)
+                            views.setViewVisibility(R.id.widget_scrim_overlay, View.GONE)
                             imageLoaded = true
                         }
                     } catch (e: Throwable) {
@@ -123,5 +138,44 @@ class PufluvWidgetProvider : AppWidgetProvider() {
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
+    }
+
+    /**
+     * Memotong bitmap dengan sudut melengkung halus (anti-aliasing) dan
+     * menambahkan gradient scrim gelap terpadu di atas dan bawah.
+     * Kompatibel dengan semua launcher Android (termasuk Android 11 & MIUI di Redmi Note 10S).
+     */
+    private fun createRoundedWidgetBitmap(src: Bitmap, cornerRadiusPx: Float): Bitmap {
+        val output = Bitmap.createBitmap(src.width, src.height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(output)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        val rect = Rect(0, 0, src.width, src.height)
+        val rectF = RectF(rect)
+
+        // 1. Mask sudut melengkung
+        canvas.drawARGB(0, 0, 0, 0)
+        paint.color = Color.BLACK
+        canvas.drawRoundRect(rectF, cornerRadiusPx, cornerRadiusPx, paint)
+
+        // 2. Gambar foto terpotong sudut
+        paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+        canvas.drawBitmap(src, rect, rect, paint)
+
+        // 3. Gradient scrim gelap atas & bawah untuk teks terbaca jelas
+        paint.xfermode = null
+        val gradient = LinearGradient(
+            0f, 0f, 0f, src.height.toFloat(),
+            intArrayOf(
+                Color.argb(90, 0, 0, 0),   // atas agak gelap untuk hitung mundur
+                Color.argb(0, 0, 0, 0),    // tengah transparan
+                Color.argb(215, 0, 0, 0)   // bawah gelap untuk caption & waktu
+            ),
+            floatArrayOf(0f, 0.42f, 1f),
+            Shader.TileMode.CLAMP
+        )
+        paint.shader = gradient
+        canvas.drawRoundRect(rectF, cornerRadiusPx, cornerRadiusPx, paint)
+
+        return output
     }
 }
