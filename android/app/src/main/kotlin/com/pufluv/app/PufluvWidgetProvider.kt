@@ -67,27 +67,29 @@ class PufluvWidgetProvider : AppWidgetProvider() {
                         }
                         BitmapFactory.decodeFile(imageFile.absolutePath, options)
 
-                        // Target dimensi widget Android maksimum ~720x720 px untuk mencegah IPC RemoteViews crash
-                        val maxDim = 720
+                        // Target dimensi widget Android maksimum ~480x480 px dengan RGB_565
+                        // Ukuran memori maksimal: 480 * 480 * 2 = ~460 KB (jauh di bawah batas Binder IPC 1MB)
+                        val maxDim = 480
                         var inSampleSize = 1
                         val (height: Int, width: Int) = options.outHeight to options.outWidth
                         if (height > maxDim || width > maxDim) {
                             val halfHeight: Int = height / 2
                             val halfWidth: Int = width / 2
-                            while (halfHeight / inSampleSize >= maxDim && halfWidth / inSampleSize >= maxDim) {
+                            while (halfHeight / inSampleSize >= maxDim || halfWidth / inSampleSize >= maxDim) {
                                 inSampleSize *= 2
                             }
                         }
 
                         val decodeOpts = BitmapFactory.Options().apply {
                             this.inSampleSize = inSampleSize
-                            inPreferredConfig = android.graphics.Bitmap.Config.ARGB_8888
+                            inPreferredConfig = android.graphics.Bitmap.Config.RGB_565
                         }
                         val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath, decodeOpts)
                         if (bitmap != null) {
                             views.setImageViewBitmap(R.id.widget_image, bitmap)
                             views.setViewVisibility(R.id.widget_image, View.VISIBLE)
                             views.setViewVisibility(R.id.widget_placeholder, View.GONE)
+                            views.setViewVisibility(R.id.widget_scrim_overlay, View.VISIBLE)
                             imageLoaded = true
                         }
                     } catch (e: Throwable) {
@@ -99,6 +101,7 @@ class PufluvWidgetProvider : AppWidgetProvider() {
             if (!imageLoaded) {
                 views.setViewVisibility(R.id.widget_image, View.GONE)
                 views.setViewVisibility(R.id.widget_placeholder, View.VISIBLE)
+                views.setViewVisibility(R.id.widget_scrim_overlay, View.GONE)
             }
 
             // Klik widget untuk membuka aplikasi

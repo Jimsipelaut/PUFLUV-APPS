@@ -17,7 +17,8 @@ class WidgetSyncManager {
     try {
       // 1. Simpan Foto Moment ke file lokal agar bisa dibaca RemoteViews Android
       if (partnerMoment != null && partnerMoment.photoBase64.isNotEmpty) {
-        final bytes = base64Decode(partnerMoment.photoBase64);
+        final cleanBase64 = partnerMoment.photoBase64.replaceAll(RegExp(r'\s+'), '');
+        final bytes = base64Decode(cleanBase64);
         final tempDir = await getApplicationSupportDirectory();
         final imageFile = File('${tempDir.path}/partner_moment_widget.jpg');
         await imageFile.writeAsBytes(bytes, flush: true);
@@ -91,7 +92,9 @@ class WidgetSyncManager {
 
       // 4. Minta sistem Android update UI AppWidget
       await HomeWidget.updateWidget(
+        name: androidWidgetProvider,
         androidName: androidWidgetProvider,
+        qualifiedAndroidName: 'com.pufluv.app.$androidWidgetProvider',
       );
       debugPrint('[WidgetSyncManager] Native widget successfully updated!');
     } catch (e, stack) {
@@ -117,7 +120,11 @@ class WidgetSyncManager {
       await HomeWidget.saveWidgetData<String>('nearest_countdown_number', null);
       await HomeWidget.saveWidgetData<String>('nearest_countdown_label', null);
 
-      await HomeWidget.updateWidget(androidName: androidWidgetProvider);
+      await HomeWidget.updateWidget(
+        name: androidWidgetProvider,
+        androidName: androidWidgetProvider,
+        qualifiedAndroidName: 'com.pufluv.app.$androidWidgetProvider',
+      );
       debugPrint('[WidgetSyncManager] Widget data cleared on logout.');
     } catch (e) {
       debugPrint('[WidgetSyncManager] Failed to clear widget data: $e');

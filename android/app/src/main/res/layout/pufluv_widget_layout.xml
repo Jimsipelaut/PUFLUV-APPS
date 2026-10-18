@@ -26,10 +26,13 @@
         android:visibility="gone" />
 
     <!-- Gradient Overlay Atas & Bawah Gelap Transparan -->
-    <View
+    <ImageView
+        android:id="@+id/widget_scrim_overlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/widget_scrim" />
+        android:src="@drawable/widget_scrim"
+        android:scaleType="fitXY"
+        android:contentDescription="Gradient Overlay" />
 
     <!-- Bagian Atas Kanan: Countdown Anniversary / Tanggal Penting -->
     <LinearLayout
