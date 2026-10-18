@@ -226,6 +226,7 @@ class HomeProvider with ChangeNotifier {
   void _syncNativeWidget() {
     WidgetSyncManager.syncWidget(
       partnerMoment: partnerMoment,
+      myMoment: myMoment,
       dates: _dates,
     );
   }

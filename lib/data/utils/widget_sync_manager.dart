@@ -9,15 +9,19 @@ import '../model/moment_model.dart';
 class WidgetSyncManager {
   static const String androidWidgetProvider = 'PufluvWidgetProvider';
 
-  /// Sync data Moment Partner & Countdown ke Home Screen Widget native Android
+  /// Sync data Moment (prioritas partner, fallback myMoment) & Countdown ke Home Screen Widget native Android
   static Future<void> syncWidget({
     MomentModel? partnerMoment,
+    MomentModel? myMoment,
     List<ImportantDateModel>? dates,
   }) async {
     try {
+      final activeMoment = partnerMoment ?? myMoment;
+      final isSelf = partnerMoment == null && myMoment != null;
+
       // 1. Simpan Foto Moment ke file lokal agar bisa dibaca RemoteViews Android
-      if (partnerMoment != null && partnerMoment.photoBase64.isNotEmpty) {
-        final cleanBase64 = partnerMoment.photoBase64.replaceAll(RegExp(r'\s+'), '');
+      if (activeMoment != null && activeMoment.photoBase64.isNotEmpty) {
+        final cleanBase64 = activeMoment.photoBase64.replaceAll(RegExp(r'\s+'), '');
         final bytes = base64Decode(cleanBase64);
         final tempDir = await getApplicationSupportDirectory();
         final imageFile = File('${tempDir.path}/partner_moment_widget.jpg');
@@ -37,17 +41,19 @@ class WidgetSyncManager {
       }
 
       // 2. Simpan Caption & Mood / Time ago
-      if (partnerMoment != null) {
+      if (activeMoment != null) {
+        final baseCaption = activeMoment.caption.isNotEmpty ? activeMoment.caption : 'Moment baru';
+        final displayCaption = isSelf ? '$baseCaption (Kamu)' : baseCaption;
         await HomeWidget.saveWidgetData<String>(
           'partner_caption',
-          partnerMoment.caption.isNotEmpty ? partnerMoment.caption : 'Moment baru',
+          displayCaption,
         );
 
-        final diff = DateTime.now().difference(partnerMoment.updatedAt.toDate());
+        final diff = DateTime.now().difference(activeMoment.updatedAt.toDate());
         String timeAgo = diff.inMinutes < 60
             ? '${diff.inMinutes} mnt lalu'
             : (diff.inHours < 24 ? '${diff.inHours} jam lalu' : '${diff.inDays} hr lalu');
-        final moodSuffix = partnerMoment.mood != null ? ' · ${partnerMoment.mood}' : '';
+        final moodSuffix = activeMoment.mood != null ? ' · ${activeMoment.mood}' : '';
 
         await HomeWidget.saveWidgetData<String>(
           'partner_time_ago',

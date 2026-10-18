@@ -31,18 +31,23 @@ class PufluvWidgetProvider : AppWidgetProvider() {
             val imagePath = widgetData.getString("partner_image_path", null)
 
             // Update teks caption & waktu
-            if (!caption.isNullOrBlank()) {
-                views.setTextViewText(R.id.widget_caption, caption)
-                views.setViewVisibility(R.id.widget_caption, View.VISIBLE)
-            } else {
-                views.setViewVisibility(R.id.widget_caption, View.GONE)
-            }
+            if (!caption.isNullOrBlank() || !timeAgo.isNullOrBlank()) {
+                views.setViewVisibility(R.id.widget_caption_container, View.VISIBLE)
+                if (!caption.isNullOrBlank()) {
+                    views.setTextViewText(R.id.widget_caption, caption)
+                    views.setViewVisibility(R.id.widget_caption, View.VISIBLE)
+                } else {
+                    views.setViewVisibility(R.id.widget_caption, View.GONE)
+                }
 
-            if (!timeAgo.isNullOrBlank()) {
-                views.setTextViewText(R.id.widget_time_ago, timeAgo)
-                views.setViewVisibility(R.id.widget_time_ago, View.VISIBLE)
+                if (!timeAgo.isNullOrBlank()) {
+                    views.setTextViewText(R.id.widget_time_ago, timeAgo)
+                    views.setViewVisibility(R.id.widget_time_ago, View.VISIBLE)
+                } else {
+                    views.setViewVisibility(R.id.widget_time_ago, View.GONE)
+                }
             } else {
-                views.setViewVisibility(R.id.widget_time_ago, View.GONE)
+                views.setViewVisibility(R.id.widget_caption_container, View.GONE)
             }
 
             // Update countdown

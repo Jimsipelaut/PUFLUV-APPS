@@ -11,6 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
+        android:visibility="gone"
         android:contentDescription="Partner Moment" />
 
     <!-- Placeholder jika belum ada foto -->
@@ -23,7 +24,7 @@
         android:text="PUFLUV\nBelum ada moment baru"
         android:textColor="#E4DCD3"
         android:textSize="13sp"
-        android:visibility="gone" />
+        android:visibility="visible" />
 
     <!-- Gradient Overlay Atas & Bawah Gelap Transparan -->
     <ImageView
@@ -32,6 +33,7 @@
         android:layout_height="match_parent"
         android:src="@drawable/widget_scrim"
         android:scaleType="fitXY"
+        android:visibility="gone"
         android:contentDescription="Gradient Overlay" />
 
     <!-- Bagian Atas Kanan: Countdown Anniversary / Tanggal Penting -->
@@ -43,6 +45,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="18dp"
         android:gravity="end"
+        android:visibility="gone"
         android:orientation="vertical">
 
         <TextView
@@ -85,12 +88,14 @@
 
     <!-- Bagian Bawah Kiri: Caption & Timestamp / Mood -->
     <LinearLayout
+        android:id="@+id/widget_caption_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|start"
         android:layout_marginStart="18dp"
         android:layout_marginEnd="18dp"
         android:layout_marginBottom="16dp"
+        android:visibility="gone"
         android:orientation="vertical">
 
         <TextView
