@@ -1,10 +1,28 @@
 # Puvluf — Private Couple Moment App
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Flutter-3.29%2B-02569B?logo=flutter&logoColor=white" alt="Flutter">
+  <img src="https://img.shields.io/badge/Firebase-Spark%20(Rp0)-FFCA28?logo=firebase&logoColor=black" alt="Firebase Rp0">
+  <img src="https://img.shields.io/badge/Platform-Android%208.0%2B-3DDC84?logo=android&logoColor=white" alt="Android">
+  <img src="https://img.shields.io/badge/Design-Luxury%20Dark-E6D3C3?labelColor=0E1014" alt="Luxury Dark Theme">
+  <img src="https://img.shields.io/badge/Developer-Jimsipelaut-black?logo=github" alt="Jimsipelaut">
+</p>
+
 Aplikasi Android privat untuk dua orang (saya dan pasangan) yang mengutamakan kedekatan tanpa distraksi media sosial dan beban pesan teks (*chatless*).
 
 - **NOW** — *"Dia sedang apa sekarang?"* → setiap pengguna memiliki **1 active moment** (foto + caption + mood), foto baru otomatis menimpa foto lama tanpa jejak arsip/history.
 - **US** — *"Berapa lama lagi menuju momen penting kita?"* → pencatatan tanggal penting (anniversary, ulang tahun, dll.) dengan hitung mundur (*countdown*) otomatis yang cerdas.
 - **CONNECTED** — Balasan reaksi cepat (*quick reaction tags*), *live mood*, dan *Interactive Android Home Screen Widget (4×2 full-bleed)*.
+
+---
+
+## 👤 Pengembang & Profil GitHub
+
+Proyek ini dirancang dan dikembangkan oleh:
+
+* **Author**: [@Jimsipelaut](https://github.com/Jimsipelaut)
+* **GitHub Profile**: [https://github.com/Jimsipelaut](https://github.com/Jimsipelaut)
+* **Official Repository**: [https://github.com/Jimsipelaut/PUFLUV-APPS](https://github.com/Jimsipelaut/PUFLUV-APPS)
 
 ---
 
@@ -52,6 +70,28 @@ Aplikasi Android privat untuk dua orang (saya dan pasangan) yang mengutamakan ke
 - Teks caption, status waktu pengiriman, dan mood pasangan.
 - Tampilan nama agenda terdekat dan angka countdown hari penting.
 - Pembersihan data otomatis saat pengguna melakukan logout (*Privacy & Data Safety*).
+
+---
+
+## 📱 Kompatibilitas Perangkat & Widget Native
+
+Aplikasi dan widget homescreen telah diuji dan dioptimalkan agar berjalan stabil di seluruh ekosistem Android:
+
+* **Dukungan Perangkat**: Android 8.0 (Oreo / API 26) hingga Android 14+ (termasuk **Redmi Note 10S / MIUI**, Samsung OneUI, Google Pixel / AOSP).
+* **Solusi Rounded Corner Mulus**: Menggunakan pemrosesan native Kotlin `Canvas + PorterDuffXfermode` anti-aliasing langsung pada bitmap foto sebelum dikirim ke `RemoteViews`. Mengatasi keterbatasan launcher pihak ketiga dan launcher bawaan MIUI yang kerap mengabaikan `clipToOutline`.
+* **Proteksi Memori IPC Binder**: Resolusi bitmap foto widget dibatasi pada skala proporsional 400×400 px, menjaga ukuran memori transaksi IPC di kisaran ~400 KB (jauh di bawah batas limit 1 MB Android Binder Buffer), mencegah *TransactionTooLargeException* dan *blank white box*.
+* **Dual Scrim Gelap Terpadu**: Gradien gelap transparan atas dan bawah dirender menyatu pada bitmap foto, memastikan angka countdown dan teks caption selalu terbaca jelas di atas foto apapun.
+
+---
+
+## 📦 Ukuran Aplikasi & Distribusi APK Rilis
+
+Berbeda dengan APK versi *debug* (~180 MB) yang memuat tools kompilasi internal, APK versi *release* telah dioptimalkan secara agresif:
+
+| Varian APK | Ukuran File | Target Arsitektur & Rekomendasi |
+|---|---|---|
+| **`Puvluf-arm64-19MB.apk`** | **18.9 MB** | **Direkomendasikan untuk Redmi Note 10S** dan seluruh smartphone Android modern 64-bit (*sangat ringan, lebih hemat penyimpanan dari WhatsApp*). |
+| **`Puvluf-Universal-50MB.apk`** | **50.9 MB** | Berisi seluruh ABI (ARMv7, ARM64, x86_64), siap dipasang di tipe HP Android apa pun. |
 
 ---
 
@@ -117,8 +157,14 @@ No issues found!
    ```bash
    flutter run
    ```
-5. Untuk kompilasi berkas APK:
+5. Untuk kompilasi berkas APK Rilis Ringan (*Split per ABI*):
    ```bash
-   flutter build apk --debug
+   flutter build apk --release --split-per-abi
    ```
-   Berkas APK siap pakai akan tersedia di `build/app/outputs/flutter-apk/app-debug.apk`.
+   Berkas APK siap pakai akan tersedia di `build/app/outputs/flutter-apk/app-arm64-v8a-release.apk` (**18.9 MB**).
+   
+   Atau untuk berkas APK universal satu paket:
+   ```bash
+   flutter build apk --release
+   ```
+   Tersedia di `build/app/outputs/flutter-apk/app-release.apk` (**50.9 MB**).
