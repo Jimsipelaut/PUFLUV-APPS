@@ -15,18 +15,33 @@
         android:contentDescription="Partner Moment" />
 
     <!-- Placeholder jika belum ada foto -->
-    <TextView
+    <LinearLayout
         android:id="@+id/widget_placeholder"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
+        android:orientation="vertical"
         android:background="@drawable/widget_bg"
-        android:text="PUFLUV\nBelum ada moment baru"
-        android:textColor="#E4DCD3"
-        android:textSize="13sp"
-        android:visibility="visible" />
+        android:visibility="visible">
 
-    <!-- Gradient Overlay Atas & Bawah Gelap Transparan -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PUFLUV"
+            android:textColor="#E6D3C3"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.25" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Belum ada moment baru"
+            android:textColor="#9AA0AA"
+            android:textSize="11sp" />
+    </LinearLayout>
+
     <ImageView
         android:id="@+id/widget_scrim_overlay"
         android:layout_width="match_parent"
@@ -36,65 +51,87 @@
         android:visibility="gone"
         android:contentDescription="Gradient Overlay" />
 
-    <!-- Bagian Atas Kanan: Countdown Anniversary / Tanggal Penting -->
-    <LinearLayout
-        android:id="@+id/widget_countdown_container"
-        android:layout_width="wrap_content"
+    <!-- TOP BAR WIDGET: Mood badge di kiri, Countdown di kanan -->
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="top|end"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="18dp"
-        android:gravity="end"
-        android:visibility="gone"
-        android:orientation="vertical">
+        android:layout_gravity="top"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="14dp">
 
         <TextView
-            android:id="@+id/widget_event_title"
+            android:id="@+id/widget_mood_badge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:letterSpacing="0.15"
-            android:text="ANNIVERSARY"
-            android:textColor="#E6D3C3"
-            android:textSize="9sp"
-            android:textStyle="bold" />
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/widget_pill_bg"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            android:textSize="14sp"
+            android:textColor="#FAF6F1"
+            android:visibility="gone" />
 
         <LinearLayout
+            android:id="@+id/widget_countdown_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="bottom"
-            android:orientation="horizontal">
+            android:layout_alignParentEnd="true"
+            android:gravity="end"
+            android:orientation="vertical"
+            android:visibility="gone">
 
             <TextView
-                android:id="@+id/widget_countdown_number"
+                android:id="@+id/widget_event_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:includeFontPadding="false"
-                android:text="8"
-                android:textColor="#FAF6F1"
-                android:textSize="32sp"
+                android:letterSpacing="0.18"
+                android:text="ANNIVERSARY"
+                android:textColor="#E6D3C3"
+                android:textSize="8sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/widget_countdown_label"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_marginBottom="4dp"
-                android:text="hari lagi"
-                android:textColor="#E4DCD3"
-                android:textSize="11sp" />
-        </LinearLayout>
-    </LinearLayout>
+                android:gravity="bottom"
+                android:orientation="horizontal">
 
-    <!-- Bagian Bawah Kiri: Caption & Timestamp / Mood -->
+                <TextView
+                    android:id="@+id/widget_countdown_number"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:includeFontPadding="false"
+                    android:text="8"
+                    android:textColor="#FAF6F1"
+                    android:textSize="26sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/widget_countdown_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginBottom="3dp"
+                    android:text="hari lagi"
+                    android:textColor="#E6D3C3"
+                    android:textSize="10sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </RelativeLayout>
+
+    <!-- BOTTOM BAR WIDGET: Caption & Waktu -->
     <LinearLayout
         android:id="@+id/widget_caption_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|start"
-        android:layout_marginStart="18dp"
-        android:layout_marginEnd="18dp"
-        android:layout_marginBottom="16dp"
+        android:layout_gravity="bottom"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="14dp"
         android:visibility="gone"
         android:orientation="vertical">
 
@@ -106,7 +143,7 @@
             android:maxLines="2"
             android:text="lagi makan nih hehe"
             android:textColor="#FAF6F1"
-            android:textSize="17sp"
+            android:textSize="15sp"
             android:textStyle="bold" />
 
         <TextView
@@ -114,8 +151,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="3dp"
-            android:text="2 jam lalu · 🥰"
+            android:text="2 jam lalu"
             android:textColor="#D4CCC3"
-            android:textSize="12sp" />
+            android:textSize="11sp" />
     </LinearLayout>
 </FrameLayout>

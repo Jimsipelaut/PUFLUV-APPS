@@ -1,7 +1,7 @@
 # PROGRESS
 
 Status: `[ ]` TODO · `[~]` IN PROGRESS · `[x]` DONE · `[!]` BLOCKED
-Deadline: **25 Oktober 2026**. Terakhir diperbarui: 2026-10-06.
+Deadline: **25 Oktober 2026**. Terakhir diperbarui: 2026-11-02.
 
 | Fase | Isi | Status |
 |---|---|---|
@@ -42,3 +42,8 @@ Lihat `docs/02-mvp-and-priorities.md` bagian 5 (5 skenario dua perangkat).
 - 2026-10-17: Eksekusi rangkaian audit H1–H6 & M1–M10: implementasi transaksi atomik room (H2), filter hari negatif countdown & leap-year (H1), arsitektur HomeProvider dengan cache gambar memori bebas flicker (H4), single sync widget dan pembersihan data saat logout (H5, H6), penanganan error jaringan splash retry (H3), kompresi adaptif multi-tahap (M5), indikator loading kompresi (M7), mood picker 6 opsi di form moment, swipe-to-delete tanggal dengan konfirmasi (M10), dan fitur Lupa Password via email (M1). Seluruh 15 unit tests lulus. Fase 4-8 dinyatakan DONE.
 - 2026-10-17: Implementasi presisi desain visual Luxury Dark Theme (`#0E1014`, `#181B22`, `#E6D3C3`, font `DM Sans` & `Fraunces`) dari file HTML/Figma: Hero partner card 370px, bar tag balasan instan, bottom sheet kelola reaksi kustom, serta perombakan Android Native AppWidget 4×2 layout full-bleed dengan optimasi downsampling bitmap adaptif dan izin berkas publik bebas blank putih. Seluruh fase (Fase 1 hingga Fase 12) telah diselesaikan dan diverifikasi. Build APK final ditempatkan di `D:\PUVLUF\Puvluf.apk`.
 - 2026-10-17: Penyeragaman UI (D-20). Tema global diganti dari pink/terang ke Luxury Dark; dibuat `lib/ui/theme/` (token + komponen bersama). Layar Splash, Login, Register, Couple Setup, Join Couple, Daftar Tanggal, Form Tanggal, dan Edit Moment didesain ulang mengikuti 3 desain HTML acuan. Logika bisnis/provider/repository tidak diubah. Launch background Android digelapkan.
+- 2026-10-21: Dokumentasi repo diperbarui (`README.md`) — profil developer `@Jimsipelaut` (Muhammad Pashya Mahesa Farhat, IPK 3.89), panduan distribusi APK per-ABI, device compatibility matrix (ARM64 / Redmi Note 10S). Commit `53af038`.
+- 2026-10-21: Animorio MCP (`https://animorio.com/mcp/`) diintegrasikan ke Hermes sebagai referensi animasi CSS (822+ entri). Digunakan untuk referensi ripple/pulse pada chip reaksi.
+- 2026-11-02: **D-22** — Home screen dibangun ulang penuh (1157 baris): top bar PUFLUV + hamburger menu, hero card 400px foto partner full-bleed dengan inline quick-react ❤️, reaction bar horizontal scroll + chip animasi pulse (ScaleTransition), live countdown HH:MM:SS jika hari-H, my moment mini-card 68px + tombol Ganti/Tambah. Logika provider tidak diubah. File: `lib/ui/home/home_screen.dart`. `flutter analyze`: 0 issues. `flutter test`: 15/15 passed.
+- 2026-11-02: **D-23** — Native Android Widget 4×2 diperbarui: layout 3-zona (mood emoji pill kiri atas, countdown kanan atas, caption + waktu bawah), `widget_pill_bg.xml` drawable baru. Kotlin `PufluvWidgetProvider.kt` diperbarui: mood emoji badge, countdown container, gradient scrim dramatis (alpha 120→0→220) dalam satu Canvas pass. `widget_sync_manager.dart` diperbarui: simpan `partner_mood_emoji`, `nearest_event_title`, `nearest_countdown_number`, `nearest_countdown_label`. File: `pufluv_widget_layout.xml`, `PufluvWidgetProvider.kt`, `widget_sync_manager.dart`, `widget_pill_bg.xml`.
+- 2026-11-02: APK release baru di-build (`flutter run --release`) via USB debug ke device fisik `V2322` (Android 15, ARM64). APK tersimpan di `D:\PUVLUF\Puvluf.apk` (19.7 MB). `flutter analyze`: 0 issues. `flutter test`: 15/15 passed.

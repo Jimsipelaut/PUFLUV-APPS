@@ -3,7 +3,6 @@ package com.pufluv.app
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -35,10 +34,19 @@ class PufluvWidgetProvider : AppWidgetProvider() {
             // 1. Ambil data dari shared preferences
             val caption = widgetData.getString("partner_caption", null)
             val timeAgo = widgetData.getString("partner_time_ago", null)
+            val moodEmoji = widgetData.getString("partner_mood_emoji", null)
             val eventTitle = widgetData.getString("nearest_event_title", null)
             val countdownNum = widgetData.getString("nearest_countdown_number", null)
             val countdownLabel = widgetData.getString("nearest_countdown_label", null)
             val imagePath = widgetData.getString("partner_image_path", null)
+
+            // Mood Emoji Badge di kiri atas
+            if (!moodEmoji.isNullOrBlank()) {
+                views.setTextViewText(R.id.widget_mood_badge, moodEmoji)
+                views.setViewVisibility(R.id.widget_mood_badge, View.VISIBLE)
+            } else {
+                views.setViewVisibility(R.id.widget_mood_badge, View.GONE)
+            }
 
             // Update teks caption & waktu
             if (!caption.isNullOrBlank() || !timeAgo.isNullOrBlank()) {
@@ -76,14 +84,11 @@ class PufluvWidgetProvider : AppWidgetProvider() {
                 val imageFile = File(imagePath)
                 if (imageFile.exists() && imageFile.canRead()) {
                     try {
-                        // Decode bounds terlebih dahulu untuk kalkulasi downsampling hemat memori IPC
                         val options = BitmapFactory.Options().apply {
                             inJustDecodeBounds = true
                         }
                         BitmapFactory.decodeFile(imageFile.absolutePath, options)
 
-                        // Target dimensi widget Android maksimum ~400x400 px
-                        // Menjaga ukuran Binder IPC jauh di bawah batas 1MB
                         val maxDim = 400
                         var inSampleSize = 1
                         val (height: Int, width: Int) = options.outHeight to options.outWidth
@@ -101,7 +106,6 @@ class PufluvWidgetProvider : AppWidgetProvider() {
                         }
                         val rawBitmap = BitmapFactory.decodeFile(imageFile.absolutePath, decodeOpts)
                         if (rawBitmap != null) {
-                            // Hitung corner radius proporsional (28dp relatif terhadap dimensi widget)
                             val cornerRadiusPx = rawBitmap.width * (28f / 300f)
                             val roundedBitmap = createRoundedWidgetBitmap(rawBitmap, cornerRadiusPx)
                             rawBitmap.recycle()
@@ -140,11 +144,6 @@ class PufluvWidgetProvider : AppWidgetProvider() {
         }
     }
 
-    /**
-     * Memotong bitmap dengan sudut melengkung halus (anti-aliasing) dan
-     * menambahkan gradient scrim gelap terpadu di atas dan bawah.
-     * Kompatibel dengan semua launcher Android (termasuk Android 11 & MIUI di Redmi Note 10S).
-     */
     private fun createRoundedWidgetBitmap(src: Bitmap, cornerRadiusPx: Float): Bitmap {
         val output = Bitmap.createBitmap(src.width, src.height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(output)
@@ -166,11 +165,11 @@ class PufluvWidgetProvider : AppWidgetProvider() {
         val gradient = LinearGradient(
             0f, 0f, 0f, src.height.toFloat(),
             intArrayOf(
-                Color.argb(90, 0, 0, 0),   // atas agak gelap untuk hitung mundur
+                Color.argb(120, 0, 0, 0),  // atas gelap untuk mood badge & countdown
                 Color.argb(0, 0, 0, 0),    // tengah transparan
-                Color.argb(215, 0, 0, 0)   // bawah gelap untuk caption & waktu
+                Color.argb(220, 0, 0, 0)   // bawah gelap untuk caption & waktu
             ),
-            floatArrayOf(0f, 0.42f, 1f),
+            floatArrayOf(0f, 0.40f, 1f),
             Shader.TileMode.CLAMP
         )
         paint.shader = gradient

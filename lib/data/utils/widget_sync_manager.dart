@@ -27,7 +27,6 @@ class WidgetSyncManager {
         final imageFile = File('${tempDir.path}/partner_moment_widget.jpg');
         await imageFile.writeAsBytes(bytes, flush: true);
 
-        // Pastikan izin file bisa dibaca oleh proses sistem Android / Launcher
         try {
           await Process.run('chmod', ['644', imageFile.path]);
         } catch (_) {}
@@ -40,7 +39,7 @@ class WidgetSyncManager {
         await HomeWidget.saveWidgetData<String>('partner_image_path', null);
       }
 
-      // 2. Simpan Caption & Mood / Time ago
+      // 2. Simpan Caption, Mood Emoji, dan Time ago
       if (activeMoment != null) {
         final baseCaption = activeMoment.caption.isNotEmpty ? activeMoment.caption : 'Moment baru';
         final displayCaption = isSelf ? '$baseCaption (Kamu)' : baseCaption;
@@ -49,19 +48,26 @@ class WidgetSyncManager {
           displayCaption,
         );
 
+        // Mood emoji terpisah untuk badge pill
+        if (activeMoment.mood != null && activeMoment.mood!.isNotEmpty) {
+          await HomeWidget.saveWidgetData<String>('partner_mood_emoji', activeMoment.mood);
+        } else {
+          await HomeWidget.saveWidgetData<String>('partner_mood_emoji', null);
+        }
+
         final diff = DateTime.now().difference(activeMoment.updatedAt.toDate());
         String timeAgo = diff.inMinutes < 60
             ? '${diff.inMinutes} mnt lalu'
             : (diff.inHours < 24 ? '${diff.inHours} jam lalu' : '${diff.inDays} hr lalu');
-        final moodSuffix = activeMoment.mood != null ? ' · ${activeMoment.mood}' : '';
 
         await HomeWidget.saveWidgetData<String>(
           'partner_time_ago',
-          '$timeAgo$moodSuffix',
+          timeAgo,
         );
       } else {
         await HomeWidget.saveWidgetData<String>('partner_caption', null);
         await HomeWidget.saveWidgetData<String>('partner_time_ago', null);
+        await HomeWidget.saveWidgetData<String>('partner_mood_emoji', null);
       }
 
       // 3. Simpan Countdown Terdekat (hanya daysUntil >= 0)
@@ -108,7 +114,7 @@ class WidgetSyncManager {
     }
   }
 
-  /// Menghapus seluruh data widget dan file foto lokal saat pengguna logout (H6)
+  /// Menghapus seluruh data widget dan file foto lokal saat pengguna logout
   static Future<void> clearWidgetData() async {
     try {
       final savedPath = await HomeWidget.getWidgetData<String>('partner_image_path');
@@ -122,6 +128,7 @@ class WidgetSyncManager {
       await HomeWidget.saveWidgetData<String>('partner_image_path', null);
       await HomeWidget.saveWidgetData<String>('partner_caption', null);
       await HomeWidget.saveWidgetData<String>('partner_time_ago', null);
+      await HomeWidget.saveWidgetData<String>('partner_mood_emoji', null);
       await HomeWidget.saveWidgetData<String>('nearest_event_title', null);
       await HomeWidget.saveWidgetData<String>('nearest_countdown_number', null);
       await HomeWidget.saveWidgetData<String>('nearest_countdown_label', null);
